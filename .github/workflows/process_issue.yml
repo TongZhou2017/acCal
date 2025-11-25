@@ -7,16 +7,40 @@ on:
 jobs:
   process_new_conference:
     # 仅处理使用 conference_submission 模板的新Issue
-    # 由于 Issue 模板会自动添加 pending-review 标签，我们检查 Issue body 中是否包含会议名称字段
-    if: contains(github.event.issue.body, '会议名称') || contains(github.event.issue.body, 'conf_name') || contains(join(github.event.issue.labels.*.name), 'pending-review')
+    # 检查 Issue body 中是否包含会议相关字段，或是否有 pending-review 标签
     runs-on: ubuntu-latest
     
     steps:
+      - name: 调试 - 显示 Issue 信息
+        run: |
+          echo "Issue Number: ${{ github.event.issue.number }}"
+          echo "Issue Title: ${{ github.event.issue.title }}"
+          echo "Issue Labels: ${{ join(github.event.issue.labels.*.name, ',') }}"
+          echo "Issue Body (first 500 chars):"
+          echo "${{ github.event.issue.body }}" | head -c 500
+      
+      - name: 检查是否为会议提交 Issue
+        id: check_issue
+        run: |
+          BODY="${{ github.event.issue.body }}"
+          LABELS="${{ join(github.event.issue.labels.*.name, ',') }}"
+          
+          # 检查是否包含会议相关关键词
+          if echo "$BODY" | grep -qE "(会议名称|Conference Title|conf_name|一级学科分类|Primary Discipline)" || echo "$LABELS" | grep -q "pending-review"; then
+            echo "is_conference=true" >> $GITHUB_OUTPUT
+            echo "✅ 检测到会议提交 Issue"
+          else
+            echo "is_conference=false" >> $GITHUB_OUTPUT
+            echo "❌ 未检测到会议提交格式，跳过处理"
+          fi
+      
       - name: 检查代码
+        if: steps.check_issue.outputs.is_conference == 'true'
         uses: actions/checkout@v4
 
       # 1. 解析 Issue 结构化内容
       - name: 解析Issue表单数据
+        if: steps.check_issue.outputs.is_conference == 'true'
         id: parser
         # 此Action能将YAML表单内容解析为JSON输出
         uses: stefanbuck/github-issue-parser@v3 
@@ -25,18 +49,21 @@ jobs:
           
       # 2. 设置 Python 环境
       - name: 设置 Python 3.11
+        if: steps.check_issue.outputs.is_conference == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           
       # 3. 安装依赖 (如果 issue_to_md.py 需要)
       - name: 安装 Python 依赖
+        if: steps.check_issue.outputs.is_conference == 'true'
         run: |
           # 仅需 os, json, datetime, re 等标准库，无需安装额外依赖
           echo "无需安装额外依赖"
 
       # 4. 运行 Python 脚本生成 Markdown 文件
       - name: 运行转换脚本
+        if: steps.check_issue.outputs.is_conference == 'true'
         env:
           ISSUE_DATA: ${{ steps.parser.outputs.jsonString }} # 将解析后的JSON传递给脚本
           ISSUE_NUMBER: ${{ github.event.issue.number }}
@@ -46,6 +73,7 @@ jobs:
 
       # 5. 创建 Pull Request
       - name: 创建 Pull Request (PR)
+        if: steps.check_issue.outputs.is_conference == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
