@@ -51,6 +51,8 @@ navigation:
     url: "/"
   - title: "会议列表"
     url: "/conferences/"
+  - title: "统计信息"
+    url: "/statistics/"
   - title: "订阅"
     url: "/subscribe/"
   - title: "提交会议"

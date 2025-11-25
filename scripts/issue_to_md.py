@@ -94,8 +94,12 @@ def generate_markdown(issue_data_json):
             yaml_fm += f"\n{key}: \"{value}\""
     yaml_fm += "\n---\n"
     
-    # 文件主体内容（可为空或添加描述）
-    content = f"\n\n请在审核时补充会议简介...\n"
+    # 文件主体内容：如果有会议简介，使用简介；否则使用默认提示
+    description = data.get('description', '').strip()
+    if description:
+        content = f"\n## 会议简介\n\n{description}\n"
+    else:
+        content = f"\n\n请在审核时补充会议简介...\n"
     
     markdown_content = yaml_fm + content
     

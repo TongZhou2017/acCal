@@ -78,3 +78,12 @@ body:
       description: "🚫 必须是官方信息源，拒绝第三方中介链接。"
     validations:
       required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 9. 会议简介
+      description: "简要介绍会议的主题、目标和主要内容（可选）"
+      placeholder: "例如：本次会议将汇聚国内外专家学者，围绕...主题展开深入讨论..."
+    validations:
+      required: false
