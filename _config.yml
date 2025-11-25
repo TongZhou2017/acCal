@@ -1,0 +1,38 @@
+# acCal 网站基础配置
+# 适用于 Hugo 或 Jekyll 静态网站生成器
+
+# 网站基本信息
+title: "acCal - 学术会议日历"
+description: "开源、可订阅、经过人工审核的纯净学术会议日历"
+baseURL: "https://yourusername.github.io/acCal"  # 请替换为你的 GitHub Pages URL
+languageCode: "zh-cn"
+defaultContentLanguage: "zh"
+
+# 主题配置（示例，根据实际使用的主题调整）
+theme: "hugo-theme-xxx"  # 或 jekyll-theme-xxx
+
+# 菜单配置
+menu:
+  main:
+    - name: "首页"
+      url: "/"
+      weight: 1
+    - name: "会议列表"
+      url: "/conferences/"
+      weight: 2
+    - name: "提交会议"
+      url: "https://github.com/yourusername/acCal/issues/new?template=conference_submission.yml"
+      weight: 3
+    - name: "关于"
+      url: "/about/"
+      weight: 4
+
+# 参数配置
+params:
+  author: "acCal Community"
+  description: "让学术回归纯粹，把时间还给科研"
+  
+# 内容目录
+contentDir: "content"
+staticDir: "static"
+

@@ -1,0 +1,62 @@
+name: Issue 自动转换为内容PR
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  process_new_conference:
+    # 仅处理使用 conference_submission 模板的新Issue
+    # 由于 Issue 模板会自动添加 pending-review 标签，我们检查 Issue body 中是否包含会议名称字段
+    if: contains(github.event.issue.body, 'conf_name') || contains(join(github.event.issue.labels.*.name), 'pending-review')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 检查代码
+        uses: actions/checkout@v4
+
+      # 1. 解析 Issue 结构化内容
+      - name: 解析Issue表单数据
+        id: parser
+        # 此Action能将YAML表单内容解析为JSON输出
+        uses: stefanbuck/github-issue-parser@v3 
+        with:
+          issue_body: ${{ github.event.issue.body }}
+          
+      # 2. 设置 Python 环境
+      - name: 设置 Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          
+      # 3. 安装依赖 (如果 issue_to_md.py 需要)
+      - name: 安装 Python 依赖
+        run: |
+          # 仅需 os, json, datetime, re 等标准库，无需安装额外依赖
+
+      # 4. 运行 Python 脚本生成 Markdown 文件
+      - name: 运行转换脚本
+        env:
+          ISSUE_DATA: ${{ steps.parser.outputs.jsonString }} # 将解析后的JSON传递给脚本
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          # 实际执行时，你需要修改 issue_to_md.py 来读取 ISSUE_DATA 环境变量
+          python scripts/issue_to_md.py
+
+      # 5. 创建 Pull Request
+      - name: 创建 Pull Request (PR)
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: 'feat(content): Add new conference from Issue #${{ github.event.issue.number }}'
+          title: 'Draft: Add conference from Issue #${{ github.event.issue.number }}'
+          body: |
+            This PR was automatically generated from Issue #${{ github.event.issue.number }}.
+            
+            **Manual Review Required:** Please check the URL and meeting legitimacy before merging.
+            
+            Submitted by: @${{ github.event.issue.user.login }}
+          branch: 'issue-pr-${{ github.event.issue.number }}'
+          delete-branch: true
+

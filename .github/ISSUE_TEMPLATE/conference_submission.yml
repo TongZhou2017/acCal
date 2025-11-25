@@ -1,0 +1,71 @@
+name: 📅 提交会议信息 (Submit Conference)
+
+description: 提交一个新的学术会议信息，支持所有学科领域。
+
+title: "[会议]: "
+
+labels: ["pending-review"]
+
+body:
+  - type: input
+    id: conf_name
+    attributes:
+      label: 1. 会议名称 (Conference Title)
+      placeholder: 例如：第十届全国生物多样性大会
+    validations:
+      required: true
+  
+  - type: dropdown
+    id: discipline_group
+    attributes:
+      label: 2. 一级学科分类 (Primary Discipline)
+      options:
+        - 🌿 生命科学 (Life Sciences)
+        - 🌍 地球与环境 (Earth & Environment)
+        - 💻 信息与工程 (IT & Engineering)
+        - ⚛️ 数理化 (Physical Sciences)
+        - 📚 人文社科 (Social Sciences)
+        - 🏥 医学与健康 (Medicine)
+    validations:
+      required: true
+
+  - type: input
+    id: tags
+    attributes:
+      label: 3. 细分标签 (Tags)
+      description: 用逗号分隔，例如：生态学, 进化, 基因组学
+      placeholder: 生态学, 进化
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: 4. 会议地点
+      placeholder: 城市 + 具体会场 (如: 北京·国家会议中心)
+
+  - type: input
+    id: date_start
+    attributes:
+      label: 5. 开始日期 (YYYY-MM-DD)
+      placeholder: 2025-05-20
+    validations:
+      required: true
+      # 简易日期格式校验
+      pattern: "^\\d{4}-\\d{2}-\\d{2}$"
+
+  - type: input
+    id: deadline
+    attributes:
+      label: 6. 摘要或早鸟截止日期 (YYYY-MM-DD)
+      description: 如果没有，请留空
+      placeholder: 2025-03-01
+
+  - type: input
+    id: url
+    attributes:
+      label: 7. 官方网址 / 官方公众号文章链接
+      description: 🚫 必须是官方信息源，拒绝第三方中介链接。
+    validations:
+      required: true
+
