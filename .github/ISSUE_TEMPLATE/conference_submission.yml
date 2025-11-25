@@ -34,7 +34,7 @@ body:
     attributes:
       label: 3. 细分标签 (Tags)
       description: "用逗号分隔，例如：生态学, 进化, 基因组学"
-      placeholder: 生态学, 进化
+      placeholder: "生态学, 进化"
     validations:
       required: true
 
@@ -48,7 +48,7 @@ body:
     id: date_start
     attributes:
       label: 5. 开始日期 (YYYY-MM-DD)
-      placeholder: 2025-05-20
+      placeholder: "2025-05-20"
     validations:
       required: true
       # 简易日期格式校验
@@ -58,14 +58,14 @@ body:
     id: deadline
     attributes:
       label: 6. 摘要或早鸟截止日期 (YYYY-MM-DD)
-      description: 如果没有，请留空
-      placeholder: 2025-03-01
+      description: "如果没有，请留空"
+      placeholder: "2025-03-01"
 
   - type: input
     id: url
     attributes:
       label: 7. 官方网址 / 官方公众号文章链接
-      description: 🚫 必须是官方信息源，拒绝第三方中介链接。
+      description: "🚫 必须是官方信息源，拒绝第三方中介链接。"
     validations:
       required: true
 
