@@ -74,6 +74,7 @@ title: 首页
         <button id="list-view-btn" onclick="switchView('list')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 transition">列表视图</button>
         <button id="calendar-view-btn" onclick="switchView('calendar')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500 transition">日历视图</button>
         <button id="map-view-btn" onclick="switchView('map')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500 transition">地图视图</button>
+        <a href="{{ '/statistics/' | relative_url }}" id="statistics-view-btn" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500 transition">统计视图</a>
       </div>
     </div>
 
