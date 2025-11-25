@@ -79,6 +79,13 @@ layout: default
               访问官方网站
             </a>
           {% endif %}
+          <button onclick="openReminderModal('{{ page.name }}', '{{ page.title }}', '{{ page.date_start }}')" 
+                  class="px-6 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+            </svg>
+            设置提醒
+          </button>
           <a href="/conferences/" class="px-6 py-2.5 border border-gray-600 rounded-lg hover:bg-gray-700 text-gray-300 transition text-center">
             返回会议列表
           </a>
@@ -98,4 +105,117 @@ layout: default
     </div>
   </article>
 </div>
+
+<!-- 提醒设置模态框 -->
+<div id="reminder-modal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] backdrop-blur-sm" onclick="closeReminderModal()">
+  <div class="bg-cardbg w-full max-w-md rounded-2xl border border-gray-700 shadow-2xl overflow-hidden transform transition-all scale-95" onclick="event.stopPropagation()">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-white">设置会议提醒</h3>
+        <button onclick="closeReminderModal()" class="text-gray-400 hover:text-white">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </button>
+      </div>
+      
+      <div id="reminder-conference-info" class="mb-4 p-3 bg-darkbg border border-gray-600 rounded-lg">
+        <div class="font-medium text-white" id="reminder-conference-title"></div>
+        <div class="text-sm text-gray-400 mt-1" id="reminder-conference-date"></div>
+      </div>
+
+      <form id="reminder-form" class="space-y-4">
+        <div>
+          <label for="reminder-email" class="block text-sm font-medium text-gray-300 mb-2">
+            邮箱地址 <span class="text-red-400">*</span>
+          </label>
+          <input type="email" 
+                 id="reminder-email" 
+                 required
+                 placeholder="your.email@example.com"
+                 class="w-full bg-darkbg border border-gray-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+        </div>
+
+        <div>
+          <label for="reminder-days" class="block text-sm font-medium text-gray-300 mb-2">
+            提前提醒天数
+          </label>
+          <div class="flex items-center gap-4">
+            <input type="number" 
+                   id="reminder-days" 
+                   value="30" 
+                   min="1" 
+                   max="365"
+                   class="w-24 bg-darkbg border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20">
+            <span class="text-gray-400">天</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">在会议开始前多少天发送提醒邮件</p>
+        </div>
+
+        <div class="pt-4 border-t border-gray-700">
+          <button type="submit" 
+                  class="w-full bg-brand hover:bg-brand-light text-white px-6 py-3 rounded-lg font-medium transition shadow-lg shadow-brand/20">
+            提交提醒设置
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentConferenceId = null;
+  let currentConferenceTitle = null;
+  let currentConferenceDate = null;
+
+  function openReminderModal(id, title, date) {
+    currentConferenceId = id;
+    currentConferenceTitle = title;
+    currentConferenceDate = date;
+    
+    document.getElementById('reminder-conference-title').textContent = title;
+    document.getElementById('reminder-conference-date').textContent = '会议日期: ' + date;
+    
+    document.getElementById('reminder-modal').classList.remove('hidden');
+    document.getElementById('reminder-modal').classList.add('flex');
+  }
+
+  function closeReminderModal() {
+    document.getElementById('reminder-modal').classList.add('hidden');
+    document.getElementById('reminder-modal').classList.remove('flex');
+    document.getElementById('reminder-form').reset();
+  }
+
+  document.getElementById('reminder-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('reminder-email').value;
+    const days = document.getElementById('reminder-days').value;
+    
+    // 生成GitHub Issue内容
+    const issueTitle = `[会议提醒] ${currentConferenceTitle}`;
+    const issueBody = `## 会议提醒设置
+
+**会议：** ${currentConferenceTitle}
+**会议ID：** ${currentConferenceId}
+**会议日期：** ${currentConferenceDate}
+**邮箱地址：** ${email}
+**提前提醒天数：** ${days} 天
+
+---
+
+*此提醒请求由网站表单自动生成*`;
+
+    // 创建GitHub Issue链接
+    const githubUrl = `https://github.com/{{ site.social.github }}/issues/new?title=${encodeURIComponent(issueTitle)}&body=${encodeURIComponent(issueBody)}&labels=reminder`;
+    
+    // 打开新窗口
+    window.open(githubUrl, '_blank');
+    
+    // 显示成功消息
+    alert('提醒设置已提交！我们将在会议开始前 ' + days + ' 天发送提醒邮件到您的邮箱。');
+    
+    closeReminderModal();
+  });
+</script>
 

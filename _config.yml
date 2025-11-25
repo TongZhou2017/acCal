@@ -33,6 +33,7 @@ exclude:
   - scripts/
   - README.md
   - LICENSE
+  - _email_templates/
 
 # 包含的文件和目录
 include:
@@ -50,6 +51,8 @@ navigation:
     url: "/"
   - title: "会议列表"
     url: "/conferences/"
+  - title: "订阅"
+    url: "/subscribe/"
   - title: "提交会议"
     url: "https://github.com/TongZhou2017/acCal/issues/new?template=conference_submission"
     external: true

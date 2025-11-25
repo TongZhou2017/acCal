@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>订阅确认 - acCal</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+  <div style="background: linear-gradient(135deg, #064E3B 0%, #059669 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 24px;">acCal 学术会议日历</h1>
+  </div>
+  
+  <div style="background: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <h2 style="color: #059669; margin-top: 0;">🎉 订阅成功！</h2>
+    
+    <p>感谢您订阅 acCal 学术会议日历！</p>
+    
+    <div style="background: #f3f4f6; padding: 20px; border-radius: 6px; margin: 20px 0;">
+      <p style="margin: 0 0 10px 0;"><strong>您的订阅信息：</strong></p>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>邮箱地址：</strong>{{EMAIL}}</li>
+        <li><strong>订阅学科：</strong>{{DISCIPLINES}}</li>
+        <li><strong>默认提醒天数：</strong>{{DEFAULT_REMINDER_DAYS}} 天</li>
+      </ul>
+    </div>
+    
+    <h3 style="color: #059669; margin-top: 30px;">📧 您将收到以下邮件：</h3>
+    <ul>
+      <li><strong>新会议通知：</strong>当有新的会议被添加到日历中时</li>
+      <li><strong>会议提醒：</strong>在会议开始前按您设置的天数发送提醒</li>
+      <li><strong>截稿提醒：</strong>在摘要截稿日期前7天发送提醒</li>
+    </ul>
+    
+    <div style="margin-top: 30px; padding: 20px; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 4px;">
+      <p style="margin: 0;"><strong>💡 提示：</strong>您可以随时通过回复此邮件或访问我们的网站来修改订阅设置或取消订阅。</p>
+    </div>
+    
+    <div style="margin-top: 30px; text-align: center;">
+      <a href="{{SITE_URL}}/subscribe/" style="display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 500;">管理订阅设置</a>
+    </div>
+    
+    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+    
+    <p style="color: #6b7280; font-size: 14px; margin: 0;">
+      此邮件由 <a href="{{SITE_URL}}" style="color: #059669;">acCal</a> 自动发送。<br>
+      如果您不想收到这些邮件，可以 <a href="{{UNSUBSCRIBE_URL}}" style="color: #059669;">取消订阅</a>。
+    </p>
+  </div>
+</body>
+</html>
+
