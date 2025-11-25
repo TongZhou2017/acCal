@@ -11,14 +11,21 @@ body:
     id: conf_name
     attributes:
       label: 1. 会议名称
-      placeholder: "例如：第十届全国生物多样性大会"
+      placeholder: "例如：全国生物多样性大会"
     validations:
       required: true
+  
+  - type: input
+    id: edition
+    attributes:
+      label: 2. 届数
+      placeholder: "例如：第十届、第5届、首届"
+      description: "如果没有届数（如首次举办），请留空"
   
   - type: dropdown
     id: discipline_group
     attributes:
-      label: 2. 一级学科分类
+      label: 3. 一级学科分类
       options:
         - 🌿 生命科学 (Life Sciences)
         - 🌍 地球与环境 (Earth & Environment)
@@ -33,7 +40,7 @@ body:
   - type: input
     id: tags
     attributes:
-      label: 3. 细分标签
+      label: 4. 细分标签
       description: "用逗号分隔，例如：生态学, 进化, 基因组学"
       placeholder: "生态学, 进化"
     validations:
@@ -42,14 +49,14 @@ body:
   - type: input
     id: location
     attributes:
-      label: 4. 会议地点
+      label: 5. 会议地点
       placeholder: "例如：北京、上海、深圳"
       description: "只需填写城市名称"
 
   - type: input
     id: date_start
     attributes:
-      label: 5. 会议时间 (YYYY-MM-DD)
+      label: 6. 会议时间 (YYYY-MM-DD)
       placeholder: "2025-05-20"
       description: "会议开始日期"
     validations:
@@ -60,14 +67,14 @@ body:
   - type: input
     id: deadline
     attributes:
-      label: 6. 摘要或早鸟截止日期 (YYYY-MM-DD)
+      label: 7. 摘要或早鸟截止日期 (YYYY-MM-DD)
       description: "如果没有，请留空"
       placeholder: "2025-03-01"
 
   - type: input
     id: url
     attributes:
-      label: 7. 官方网址 / 官方公众号文章链接
+      label: 8. 官方网址 / 官方公众号文章链接
       description: "🚫 必须是官方信息源，拒绝第三方中介链接。"
     validations:
       required: true

@@ -50,10 +50,29 @@ def generate_markdown(issue_data_json):
     # 提取核心字段，并清理 tags
     tags_list = [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()]
     
+    # 处理届数：如果有届数，将其添加到标题前
+    edition = data.get('edition', '').strip()
+    if edition:
+        # 规范化届数格式：确保有"第"和"届"
+        if not edition.startswith('第') and not edition.endswith('届'):
+            # 只有数字或中文数字，如"十"或"10"
+            edition = f"第{edition}届"
+        elif edition.startswith('第') and not edition.endswith('届'):
+            # 有"第"但没有"届"，如"第十"
+            edition = f"{edition}届"
+        elif not edition.startswith('第') and edition.endswith('届'):
+            # 有"届"但没有"第"，如"十届"
+            edition = f"第{edition}"
+        # 如果已经有"第"和"届"，直接使用
+        full_title = f"{edition}{data['conf_name']}"
+    else:
+        full_title = data['conf_name']
+    
     # 转换为 YAML Front Matter 格式（Jekyll 格式）
     front_matter = {
         "layout": "conference",  # 使用 conference 布局
-        "title": data['conf_name'],
+        "title": full_title,
+        "edition": edition if edition else None,  # 保存届数信息，便于后续使用
         "discipline": data['discipline_group'],
         "location": data.get('location', 'TBD'),
         "date_start": data['date_start'],
@@ -116,7 +135,8 @@ if __name__ == "__main__":
     else:
         # 模拟 Issue 表单提交的数据 (本地测试用)
         issue_data = {
-            "conf_name": "第六届全国进化生态学研讨会",
+            "conf_name": "全国进化生态学研讨会",
+            "edition": "第六届",
             "discipline_group": "🌿 生命科学 (Life Sciences)",
             "tags": "进化, 生态学, 植物学",
             "location": "上海",
