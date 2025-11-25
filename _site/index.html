@@ -591,11 +591,19 @@
       const text = card.textContent.toLowerCase();
       const deadlineText = card.textContent;
       const deadlineMatch = deadlineText.match(/截稿: (\d{4}-\d{2}-\d{2})/);
-      const isDeadlinePassed = deadlineMatch && new Date(deadlineMatch[1]) < new Date();
       
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(cardType);
       const matchesSearch = text.includes(searchTerm);
-      const matchesDeadline = !onlyOpen || !isDeadlinePassed || (deadlineMatch && new Date(deadlineMatch[1]) > new Date());
+      
+      // 处理截稿日期筛选逻辑，与日历视图保持一致
+      let matchesDeadline = true;
+      if (onlyOpen) {
+        if (deadlineMatch) {
+          // 有截稿日期，检查是否未过期
+          matchesDeadline = new Date(deadlineMatch[1]) > new Date();
+        }
+        // 如果没有截稿日期（deadlineMatch === null），matchesDeadline 保持为 true（显示）
+      }
       
       if (matchesType && matchesSearch && matchesDeadline) {
         card.style.display = '';
