@@ -8,7 +8,7 @@ jobs:
   process_new_conference:
     # 仅处理使用 conference_submission 模板的新Issue
     # 由于 Issue 模板会自动添加 pending-review 标签，我们检查 Issue body 中是否包含会议名称字段
-    if: contains(github.event.issue.body, 'conf_name') || contains(join(github.event.issue.labels.*.name), 'pending-review')
+    if: contains(github.event.issue.body, '会议名称') || contains(github.event.issue.body, 'conf_name') || contains(join(github.event.issue.labels.*.name), 'pending-review')
     runs-on: ubuntu-latest
     
     steps:
@@ -33,6 +33,7 @@ jobs:
       - name: 安装 Python 依赖
         run: |
           # 仅需 os, json, datetime, re 等标准库，无需安装额外依赖
+          echo "无需安装额外依赖"
 
       # 4. 运行 Python 脚本生成 Markdown 文件
       - name: 运行转换脚本
@@ -41,12 +42,11 @@ jobs:
           ISSUE_NUMBER: ${{ github.event.issue.number }}
           ISSUE_AUTHOR: ${{ github.event.issue.user.login }}
         run: |
-          # 实际执行时，你需要修改 issue_to_md.py 来读取 ISSUE_DATA 环境变量
           python scripts/issue_to_md.py
 
       # 5. 创建 Pull Request
       - name: 创建 Pull Request (PR)
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           commit-message: 'feat(content): Add new conference from Issue #${{ github.event.issue.number }}'
@@ -57,6 +57,7 @@ jobs:
             **Manual Review Required:** Please check the URL and meeting legitimacy before merging.
             
             Submitted by: @${{ github.event.issue.user.login }}
+            
+            Closes #${{ github.event.issue.number }}
           branch: 'issue-pr-${{ github.event.issue.number }}'
           delete-branch: true
-

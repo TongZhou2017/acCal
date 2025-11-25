@@ -68,4 +68,3 @@ body:
       description: "🚫 必须是官方信息源，拒绝第三方中介链接。"
     validations:
       required: true
-
