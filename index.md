@@ -57,12 +57,12 @@ title: 首页
         <p class="text-gray-400 text-sm mt-1">让学术回归纯粹，把时间还给科研</p>
       </div>
       <div class="flex gap-2">
-        <button class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700">列表视图</button>
-        <button class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500">日历视图</button>
+        <button id="list-view-btn" onclick="switchView('list')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 transition">列表视图</button>
+        <button id="calendar-view-btn" onclick="switchView('calendar')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500 transition">日历视图</button>
       </div>
     </div>
 
-    <div id="events-container" class="space-y-4">
+    <div id="list-view" class="space-y-4">
       {% assign conferences = site.conferences | sort: 'date_start' %}
       {% assign count = 0 %}
       {% for conference in conferences %}
@@ -144,12 +144,50 @@ title: 首页
         </div>
       {% endif %}
     </div>
+
+    <div id="calendar-view" class="hidden">
+      <div id="calendar-container" class="space-y-8">
+        <!-- 日历视图将通过 JavaScript 动态生成 -->
+      </div>
+    </div>
     
     <div class="mt-8 text-center">
       <p class="text-gray-500 text-sm">-- 到底了，去 <a href="https://github.com/{{ site.social.github }}" target="_blank" class="text-brand hover:underline">GitHub</a> 提交更多信息吧 --</p>
     </div>
   </section>
 </div>
+
+<!-- 会议数据（隐藏，供 JavaScript 使用） -->
+<script id="conferences-data" type="application/json">
+[
+  {% assign first = true %}
+  {% for conference in site.conferences %}
+    {% unless conference.draft %}
+      {% assign type_value = "bio" %}
+      {% if conference.discipline contains "生态" or conference.discipline contains "Ecology" %}
+        {% assign type_value = "eco" %}
+      {% elsif conference.discipline contains "进化" or conference.discipline contains "Evolution" %}
+        {% assign type_value = "evo" %}
+      {% elsif conference.discipline contains "环境" or conference.discipline contains "Environment" %}
+        {% assign type_value = "env" %}
+      {% endif %}
+      {% unless first %},{% endunless %}{% assign first = false %}
+      {
+        "id": {{ conference.name | jsonify }},
+        "title": {{ conference.title | jsonify }},
+        "location": {{ conference.location | jsonify }},
+        "dateStart": {{ conference.date_start | jsonify }},
+        "dateEnd": {{ conference.date_end | jsonify }},
+        "deadline": {{ conference.deadline | jsonify }},
+        "type": {{ type_value | jsonify }},
+        "url": {{ conference.url | relative_url | jsonify }},
+        "tags": {{ conference.tags | jsonify }},
+        "discipline": {{ conference.discipline | jsonify }}
+      }
+    {% endunless %}
+  {% endfor %}
+]
+</script>
 
 <div id="detailModal" class="fixed inset-0 bg-black/80 hidden items-center justify-center z-[100] backdrop-blur-sm" onclick="closeModal('detailModal')">
   <div class="bg-cardbg w-full max-w-2xl rounded-2xl border border-gray-700 shadow-2xl overflow-hidden transform transition-all scale-95" onclick="event.stopPropagation()">
@@ -198,6 +236,154 @@ title: 首页
 </div>
 
 <script>
+  // 获取会议数据
+  const conferencesDataScript = document.getElementById('conferences-data');
+  const conferencesData = conferencesDataScript ? JSON.parse(conferencesDataScript.textContent) : [];
+
+  // 当前视图状态
+  let currentView = 'list';
+
+  // 视图切换
+  function switchView(view) {
+    currentView = view;
+    const listView = document.getElementById('list-view');
+    const calendarView = document.getElementById('calendar-view');
+    const listBtn = document.getElementById('list-view-btn');
+    const calendarBtn = document.getElementById('calendar-view-btn');
+
+    if (view === 'list') {
+      listView.classList.remove('hidden');
+      calendarView.classList.add('hidden');
+      listBtn.classList.remove('text-gray-500');
+      calendarBtn.classList.add('text-gray-500');
+    } else {
+      listView.classList.add('hidden');
+      calendarView.classList.remove('hidden');
+      listBtn.classList.add('text-gray-500');
+      calendarBtn.classList.remove('text-gray-500');
+      renderCalendar();
+    }
+    filterEvents();
+  }
+
+  // 渲染日历视图
+  function renderCalendar() {
+    const container = document.getElementById('calendar-container');
+    if (!container) return;
+
+    // 获取筛选条件
+    const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
+    const selectedTypes = Array.from(checkedBoxes)
+      .filter(cb => cb.value && cb.id !== 'only-open')
+      .map(cb => cb.value);
+    const onlyOpen = document.getElementById('only-open')?.checked;
+    const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
+
+    // 筛选会议
+    const filteredConferences = conferencesData.filter(conf => {
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(conf.type);
+      const matchesSearch = searchTerm === '' || 
+        conf.title.toLowerCase().includes(searchTerm) ||
+        conf.location.toLowerCase().includes(searchTerm) ||
+        (conf.tags && conf.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
+      
+      let matchesDeadline = true;
+      if (onlyOpen && conf.deadline && conf.deadline !== 'N/A') {
+        matchesDeadline = new Date(conf.deadline) > new Date();
+      }
+      
+      return matchesType && matchesSearch && matchesDeadline;
+    });
+
+    // 按月份分组会议
+    const conferencesByMonth = {};
+    filteredConferences.forEach(conf => {
+      const date = new Date(conf.dateStart);
+      const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      if (!conferencesByMonth[yearMonth]) {
+        conferencesByMonth[yearMonth] = [];
+      }
+      conferencesByMonth[yearMonth].push(conf);
+    });
+
+    // 按月份排序
+    const sortedMonths = Object.keys(conferencesByMonth).sort();
+
+    container.innerHTML = '';
+
+    sortedMonths.forEach(yearMonth => {
+      const [year, month] = yearMonth.split('-');
+      const monthName = new Date(year, month - 1).toLocaleString('zh-CN', { month: 'long', year: 'numeric' });
+      const conferences = conferencesByMonth[yearMonth];
+
+      const monthSection = document.createElement('div');
+      monthSection.className = 'bg-cardbg border border-gray-700 rounded-xl p-6';
+      monthSection.innerHTML = `
+        <h3 class="text-xl font-bold text-white mb-4">${monthName}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" data-month="${yearMonth}">
+        </div>
+      `;
+
+      const grid = monthSection.querySelector(`[data-month="${yearMonth}"]`);
+      
+      conferences.forEach(conf => {
+        const date = new Date(conf.dateStart);
+        const day = date.getDate();
+        const monthShort = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+        
+        const typeClass = conf.type === 'eco' ? 'tag-eco' : 
+                          conf.type === 'evo' ? 'tag-evo' :
+                          conf.type === 'env' ? 'tag-env' : 'tag-bio';
+
+        const card = document.createElement('div');
+        card.className = 'conference-card bg-darkbg border border-gray-700 rounded-lg p-4 hover:border-brand/50 transition cursor-pointer group';
+        card.dataset.type = conf.type;
+        card.dataset.dateStart = conf.dateStart;
+        card.onclick = () => window.location.href = conf.url;
+        
+        card.innerHTML = `
+          <div class="flex items-start gap-3">
+            <div class="flex-shrink-0 flex flex-col items-center justify-center bg-cardbg w-12 h-12 rounded-lg border border-gray-600 group-hover:border-brand group-hover:text-brand transition">
+              <span class="text-xs font-bold text-gray-500 group-hover:text-brand/70">${monthShort}</span>
+              <span class="text-lg font-bold text-white group-hover:text-brand">${day}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                ${conf.tags && conf.tags.length > 0 ? 
+                  conf.tags.slice(0, 1).map(tag => `<span class="text-xs px-2 py-0.5 rounded ${typeClass}">${tag}</span>`).join('') :
+                  `<span class="text-xs px-2 py-0.5 rounded ${typeClass}">${conf.discipline}</span>`
+                }
+              </div>
+              <h4 class="text-sm font-bold text-white group-hover:text-brand transition mb-1 line-clamp-2">${conf.title}</h4>
+              <p class="text-xs text-gray-400">📍 ${conf.location}</p>
+              ${conf.deadline && conf.deadline !== 'N/A' ? 
+                `<p class="text-xs mt-1 ${new Date(conf.deadline) < new Date() ? 'text-gray-600' : 'text-orange-400'}">⚠️ 截稿: ${conf.deadline}</p>` : 
+                ''
+              }
+            </div>
+          </div>
+        `;
+        
+        grid.appendChild(card);
+      });
+
+      container.appendChild(monthSection);
+    });
+
+    if (sortedMonths.length === 0) {
+      container.innerHTML = `
+        <div class="bg-cardbg border border-gray-700 rounded-xl p-8 text-center">
+          <p class="text-gray-400 mb-4">暂无会议信息</p>
+          <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission.yml" 
+             target="_blank" 
+             class="inline-block bg-brand hover:bg-brand-light text-white px-6 py-2 rounded-lg font-medium transition">
+            提交第一个会议
+          </a>
+        </div>
+      `;
+    }
+  }
+
   // 重置筛选
   function resetFilters() {
     document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
@@ -209,7 +395,6 @@ title: 首页
     });
     filterEvents();
   }
-
 
   // 增强筛选功能
   const originalFilterEvents = window.filterEvents;
@@ -226,11 +411,12 @@ title: 首页
       const cardType = card.dataset.type || '';
       const text = card.textContent.toLowerCase();
       const deadlineText = card.textContent;
-      const isDeadlinePassed = deadlineText.includes('截稿') && deadlineText.match(/截稿: (\d{4}-\d{2}-\d{2})/);
+      const deadlineMatch = deadlineText.match(/截稿: (\d{4}-\d{2}-\d{2})/);
+      const isDeadlinePassed = deadlineMatch && new Date(deadlineMatch[1]) < new Date();
       
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(cardType);
       const matchesSearch = text.includes(searchTerm);
-      const matchesDeadline = !onlyOpen || !isDeadlinePassed || (isDeadlinePassed && new Date(isDeadlinePassed[1]) > new Date());
+      const matchesDeadline = !onlyOpen || !isDeadlinePassed || (deadlineMatch && new Date(deadlineMatch[1]) > new Date());
       
       if (matchesType && matchesSearch && matchesDeadline) {
         card.style.display = '';
@@ -238,6 +424,11 @@ title: 首页
         card.style.display = 'none';
       }
     });
+
+    // 如果当前是日历视图，重新渲染以应用筛选
+    if (currentView === 'calendar') {
+      renderCalendar();
+    }
   };
 </script>
 

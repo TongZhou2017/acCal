@@ -8,6 +8,10 @@
   <title>{% if page.title %}{{ page.title }} | {% endif %}{{ site.title }}</title>
   <meta name="description" content="{% if page.description %}{{ page.description }}{% else %}{{ site.description }}{% endif %}">
   
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ '/assets/images/favicon.png' | relative_url }}">
+  <link rel="apple-touch-icon" href="{{ '/assets/images/favicon.png' | relative_url }}">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -43,9 +47,11 @@
   <header class="border-b border-gray-700 bg-cardbg sticky top-0 z-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 bg-brand rounded-lg flex items-center justify-center text-white font-bold">A</div>
-        <a href="{{ '/' | relative_url }}" class="text-xl font-bold tracking-tight hover:text-brand transition">
-          {{ site.title }} <span class="text-brand font-light">CN</span>
+        <a href="{{ '/' | relative_url }}" class="flex items-center gap-2 hover:opacity-80 transition">
+          <img src="{{ '/assets/images/logo.png' | relative_url }}" alt="{{ site.title }}" class="h-8 w-auto object-contain">
+          <span class="text-xl font-bold tracking-tight text-white hidden sm:inline">
+            {{ site.title }} <span class="text-brand font-light">CN</span>
+          </span>
         </a>
       </div>
       
@@ -92,15 +98,21 @@
     }
 
     function filterAndSearch(searchTerm = '') {
-      const cards = document.querySelectorAll('.conference-card');
-      cards.forEach(card => {
-        const text = card.textContent.toLowerCase();
-        if (text.includes(searchTerm)) {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
+      // 调用统一的筛选函数
+      if (typeof filterEvents === 'function') {
+        filterEvents();
+      } else {
+        // 如果 filterEvents 还没定义，使用简单搜索
+        const cards = document.querySelectorAll('.conference-card');
+        cards.forEach(card => {
+          const text = card.textContent.toLowerCase();
+          if (text.includes(searchTerm)) {
+            card.style.display = '';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
     }
 
     // 筛选功能

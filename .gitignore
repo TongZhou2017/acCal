@@ -1,0 +1,24 @@
+# Jekyll 构建输出
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# 依赖
+vendor/
+.bundle/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 日志
+*.log
+
