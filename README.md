@@ -11,7 +11,7 @@ acCal 致力于解决国内学术会议信息分散、鱼龙混杂的痛点。�
 ## 💡 如何贡献（提交新会议）
 我们采用 **GitHub Issue 驱动** 的自动化流程：
 
-1.  点击 [提交会议链接](YOUR_GITHUB_REPO/issues/new?assignees=&labels=pending-review&projects=&template=conference_submission.yml&title=%5B会议%5D%3A)（未来指向 Issue 模板）。
+1.  点击 [提交会议链接](https://github.com/TongZhou2017/acCal/issues/new?assignees=&labels=pending-review&projects=&template=conference_submission.yml&title=%5B会议%5D%3A)。
 2.  填写结构化表单（YAML 格式）。
 3.  提交后，GitHub Actions (通过 `issue_to_md.py` 脚本) 会自动生成一个 Pull Request。
 4.  维护者审核通过后，数据将自动合并并更新网站。

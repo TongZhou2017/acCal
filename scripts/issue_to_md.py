@@ -42,7 +42,7 @@ def slugify(text):
 
 
 def generate_markdown(issue_data_json):
-    """将Issue数据转换为Hugo/Jekyll使用的Markdown文件"""
+    """将Issue数据转换为Jekyll使用的Markdown文件（输出到 _conferences 集合）"""
     
     # 解析 Issue 数据
     data = issue_data_json
@@ -50,8 +50,9 @@ def generate_markdown(issue_data_json):
     # 提取核心字段，并清理 tags
     tags_list = [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()]
     
-    # 转换为 YAML Front Matter 格式
+    # 转换为 YAML Front Matter 格式（Jekyll 格式）
     front_matter = {
+        "layout": "conference",  # 使用 conference 布局
         "title": data['conf_name'],
         "discipline": data['discipline_group'],
         "location": data.get('location', 'TBD'),
@@ -84,8 +85,8 @@ def generate_markdown(issue_data_json):
     title_slug = slugify(data['conf_name'])
     filename = f"{date_str}-{title_slug}" if title_slug else f"{date_str}-conference"
     
-    # 写入文件到内容目录
-    output_dir = "content"
+    # 写入文件到 Jekyll 集合目录 _conferences
+    output_dir = "_conferences"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
@@ -129,7 +130,7 @@ if __name__ == "__main__":
     try:
         generate_markdown(issue_data)
         print("---")
-        print("Python脚本运行成功，请在 'content/' 目录查看生成的 Markdown 文件。")
+        print("Python脚本运行成功，请在 '_conferences/' 目录查看生成的 Markdown 文件。")
     except Exception as e:
         print(f"脚本运行失败: {e}", file=sys.stderr)
         import traceback

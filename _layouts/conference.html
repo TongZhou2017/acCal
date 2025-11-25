@@ -1,0 +1,41 @@
+---
+layout: default
+---
+
+<article class="conference-detail">
+  <header class="conference-header">
+    <h1>{{ page.title }}</h1>
+    <div class="conference-meta">
+      <span class="discipline">{{ page.discipline }}</span>
+      <span class="date">{{ page.date_start }}{% if page.date_end != page.date_start %} - {{ page.date_end }}{% endif %}</span>
+      {% if page.location %}
+        <span class="location">📍 {{ page.location }}</span>
+      {% endif %}
+      {% if page.deadline != 'N/A' %}
+        <span class="deadline">⏰ 截止: {{ page.deadline }}</span>
+      {% endif %}
+    </div>
+    {% if page.tags.size > 0 %}
+      <div class="conference-tags">
+        {% for tag in page.tags %}
+          <span class="tag">{{ tag }}</span>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </header>
+
+  <div class="conference-content">
+    {{ content }}
+  </div>
+
+  <footer class="conference-footer">
+    <div class="conference-actions">
+      <a href="{{ page.url }}" target="_blank" rel="noopener" class="btn btn-primary">访问官方网站 →</a>
+      <a href="/conferences/" class="btn btn-secondary">返回会议列表</a>
+    </div>
+    <div class="conference-info">
+      <p><small>提交者: {{ page.submitted_by }} | 提交时间: {{ page.publishDate | date: "%Y-%m-%d" }}</small></p>
+    </div>
+  </footer>
+</article>
+
