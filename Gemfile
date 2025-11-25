@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 
-# Jekyll 和 GitHub Pages 插件
-gem "jekyll", "~> 4.3"
+# GitHub Pages 会自动管理 Jekyll 版本
+# 使用 github-pages gem 确保与 GitHub Pages 环境兼容
 gem "github-pages", group: :jekyll_plugins
 
 # Jekyll 插件
