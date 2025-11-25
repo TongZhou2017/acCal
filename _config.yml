@@ -51,7 +51,7 @@ navigation:
   - title: "会议列表"
     url: "/conferences/"
   - title: "提交会议"
-    url: "https://github.com/TongZhou2017/acCal/issues/new?template=conference_submission.yml"
+    url: "https://github.com/TongZhou2017/acCal/issues/new?template=conference_submission"
     external: true
   - title: "关于"
     url: "/about/"

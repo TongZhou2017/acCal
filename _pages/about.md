@@ -41,7 +41,7 @@ permalink: /about/
     <section class="mb-8">
       <h2 class="text-2xl font-bold text-white mb-4">如何参与</h2>
       <div class="space-y-3">
-        <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission.yml" 
+        <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission" 
            target="_blank" 
            class="flex items-center gap-3 p-4 bg-darkbg border border-gray-700 rounded-lg hover:border-brand transition group">
           <span class="text-2xl">📝</span>
