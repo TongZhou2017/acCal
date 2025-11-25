@@ -136,7 +136,7 @@ title: 首页
       {% if count == 0 %}
         <div class="bg-cardbg border border-gray-700 rounded-xl p-8 text-center">
           <p class="text-gray-400 mb-4">暂无会议信息</p>
-          <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission" 
+          <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission.yml" 
              target="_blank" 
              class="inline-block bg-brand hover:bg-brand-light text-white px-6 py-2 rounded-lg font-medium transition">
             提交第一个会议
@@ -374,7 +374,7 @@ title: 首页
       container.innerHTML = `
         <div class="bg-cardbg border border-gray-700 rounded-xl p-8 text-center">
           <p class="text-gray-400 mb-4">暂无会议信息</p>
-          <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission" 
+          <a href="https://github.com/{{ site.social.github }}/issues/new?template=conference_submission.yml" 
              target="_blank" 
              class="inline-block bg-brand hover:bg-brand-light text-white px-6 py-2 rounded-lg font-medium transition">
             提交第一个会议
