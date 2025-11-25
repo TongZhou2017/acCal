@@ -10,7 +10,7 @@ body:
   - type: input
     id: conf_name
     attributes:
-      label: 1. 会议名称 (Conference Title)
+      label: 1. 会议名称
       placeholder: "例如：第十届全国生物多样性大会"
     validations:
       required: true
@@ -18,7 +18,7 @@ body:
   - type: dropdown
     id: discipline_group
     attributes:
-      label: 2. 一级学科分类 (Primary Discipline)
+      label: 2. 一级学科分类
       options:
         - 🌿 生命科学 (Life Sciences)
         - 🌍 地球与环境 (Earth & Environment)
@@ -26,13 +26,14 @@ body:
         - ⚛️ 数理化 (Physical Sciences)
         - 📚 人文社科 (Social Sciences)
         - 🏥 医学与健康 (Medicine)
+        - 🔬 其他 (Other)
     validations:
       required: true
 
   - type: input
     id: tags
     attributes:
-      label: 3. 细分标签 (Tags)
+      label: 3. 细分标签
       description: "用逗号分隔，例如：生态学, 进化, 基因组学"
       placeholder: "生态学, 进化"
     validations:
@@ -42,13 +43,15 @@ body:
     id: location
     attributes:
       label: 4. 会议地点
-      placeholder: "城市 + 具体会场 (如: 北京·国家会议中心)"
+      placeholder: "例如：北京、上海、深圳"
+      description: "只需填写城市名称"
 
   - type: input
     id: date_start
     attributes:
-      label: 5. 开始日期 (YYYY-MM-DD)
+      label: 5. 会议时间 (YYYY-MM-DD)
       placeholder: "2025-05-20"
+      description: "会议开始日期"
     validations:
       required: true
       # 简易日期格式校验
