@@ -11,7 +11,7 @@ body:
     id: conf_name
     attributes:
       label: 1. 会议名称 (Conference Title)
-      placeholder: 例如：第十届全国生物多样性大会
+      placeholder: "例如：第十届全国生物多样性大会"
     validations:
       required: true
   
@@ -33,7 +33,7 @@ body:
     id: tags
     attributes:
       label: 3. 细分标签 (Tags)
-      description: 用逗号分隔，例如：生态学, 进化, 基因组学
+      description: "用逗号分隔，例如：生态学, 进化, 基因组学"
       placeholder: 生态学, 进化
     validations:
       required: true
@@ -42,7 +42,7 @@ body:
     id: location
     attributes:
       label: 4. 会议地点
-      placeholder: 城市 + 具体会场 (如: 北京·国家会议中心)
+      placeholder: "城市 + 具体会场 (如: 北京·国家会议中心)"
 
   - type: input
     id: date_start
