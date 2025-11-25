@@ -2,40 +2,100 @@
 layout: default
 ---
 
-<article class="conference-detail">
-  <header class="conference-header">
-    <h1>{{ page.title }}</h1>
-    <div class="conference-meta">
-      <span class="discipline">{{ page.discipline }}</span>
-      <span class="date">{{ page.date_start }}{% if page.date_end != page.date_start %} - {{ page.date_end }}{% endif %}</span>
-      {% if page.location %}
-        <span class="location">📍 {{ page.location }}</span>
-      {% endif %}
-      {% if page.deadline != 'N/A' %}
-        <span class="deadline">⏰ 截止: {{ page.deadline }}</span>
-      {% endif %}
-    </div>
-    {% if page.tags.size > 0 %}
-      <div class="conference-tags">
-        {% for tag in page.tags %}
-          <span class="tag">{{ tag }}</span>
-        {% endfor %}
+<div class="max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+  <article class="bg-cardbg border border-gray-700 rounded-2xl overflow-hidden">
+    <div class="h-32 bg-gradient-to-r from-brand-dark to-brand relative">
+      <div class="absolute bottom-4 left-6">
+        {% assign type_class = "tag-bio" %}
+        {% if page.discipline contains "生态" or page.discipline contains "Ecology" %}
+          {% assign type_class = "tag-eco" %}
+        {% elsif page.discipline contains "进化" or page.discipline contains "Evolution" %}
+          {% assign type_class = "tag-evo" %}
+        {% elsif page.discipline contains "环境" or page.discipline contains "Environment" %}
+          {% assign type_class = "tag-env" %}
+        {% endif %}
+        {% if page.tags.size > 0 %}
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-white/20 text-white border border-white/20 backdrop-blur-md">{{ page.tags[0] }}</span>
+        {% else %}
+          <span class="px-2 py-0.5 rounded text-xs font-bold bg-white/20 text-white border border-white/20 backdrop-blur-md">{{ page.discipline }}</span>
+        {% endif %}
       </div>
-    {% endif %}
-  </header>
-
-  <div class="conference-content">
-    {{ content }}
-  </div>
-
-  <footer class="conference-footer">
-    <div class="conference-actions">
-      <a href="{{ page.url }}" target="_blank" rel="noopener" class="btn btn-primary">访问官方网站 →</a>
-      <a href="/conferences/" class="btn btn-secondary">返回会议列表</a>
+      <div class="absolute top-4 right-4 text-center bg-gray-800/80 rounded px-3 py-1 border border-gray-700 backdrop-blur-md">
+        {% assign month = page.date_start | date: "%b" | upcase %}
+        {% assign day = page.date_start | date: "%d" | plus: 0 %}
+        <div class="text-xs text-gray-300 uppercase">{{ month }}</div>
+        <div class="text-xl font-bold text-white">{{ day }}</div>
+      </div>
     </div>
-    <div class="conference-info">
-      <p><small>提交者: {{ page.submitted_by }} | 提交时间: {{ page.publishDate | date: "%Y-%m-%d" }}</small></p>
+
+    <div class="p-6 md:p-8">
+      <header class="mb-6">
+        <h1 class="text-3xl font-bold text-white mb-4">{{ page.title }}</h1>
+        
+        <div class="space-y-3 mb-4">
+          {% if page.location %}
+            <div class="flex items-center gap-3 text-gray-300">
+              <span class="w-5 text-center">📍</span>
+              <span>{{ page.location }}</span>
+            </div>
+          {% endif %}
+          <div class="flex items-center gap-3 text-gray-300">
+            <span class="w-5 text-center">🕒</span>
+            <span>{{ page.date_start }}{% if page.date_end != page.date_start %} - {{ page.date_end }}{% endif %}</span>
+          </div>
+          {% if page.deadline != 'N/A' and page.deadline != '' %}
+            <div class="flex items-center gap-3 text-orange-400">
+              <span class="w-5 text-center">⚠️</span>
+              <span>摘要截稿：{{ page.deadline }}</span>
+            </div>
+          {% endif %}
+        </div>
+
+        {% if page.tags.size > 0 %}
+          <div class="flex flex-wrap gap-2 mb-4">
+            {% for tag in page.tags %}
+              {% assign type_class = "tag-bio" %}
+              {% if page.discipline contains "生态" or page.discipline contains "Ecology" %}
+                {% assign type_class = "tag-eco" %}
+              {% elsif page.discipline contains "进化" or page.discipline contains "Evolution" %}
+                {% assign type_class = "tag-evo" %}
+              {% elsif page.discipline contains "环境" or page.discipline contains "Environment" %}
+                {% assign type_class = "tag-env" %}
+              {% endif %}
+              <span class="text-xs px-2 py-0.5 rounded {{ type_class }}">{{ tag }}</span>
+            {% endfor %}
+          </div>
+        {% endif %}
+      </header>
+
+      <div class="prose prose-invert max-w-none mb-8 text-gray-300">
+        {{ content }}
+      </div>
+
+      <footer class="pt-6 border-t border-gray-700">
+        <div class="flex flex-col sm:flex-row gap-4 mb-4">
+          {% if page.url %}
+            <a href="{{ page.url }}" target="_blank" rel="noopener" class="flex-1 bg-brand hover:bg-brand-light text-white text-center py-2.5 rounded-lg font-medium transition shadow-lg shadow-brand/20">
+              访问官方网站
+            </a>
+          {% endif %}
+          <a href="/conferences/" class="px-6 py-2.5 border border-gray-600 rounded-lg hover:bg-gray-700 text-gray-300 transition text-center">
+            返回会议列表
+          </a>
+        </div>
+        {% if page.submitted_by or page.publishDate %}
+          <div class="text-gray-500 text-sm">
+            {% if page.submitted_by %}
+              <span>提交者: {{ page.submitted_by }}</span>
+            {% endif %}
+            {% if page.submitted_by and page.publishDate %} | {% endif %}
+            {% if page.publishDate %}
+              <span>提交时间: {{ page.publishDate | date: "%Y-%m-%d" }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+      </footer>
     </div>
-  </footer>
-</article>
+  </article>
+</div>
 
