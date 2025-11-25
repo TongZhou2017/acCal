@@ -22,3 +22,7 @@ Thumbs.db
 # 日志
 *.log
 
+# 本地配置文件（包含敏感信息）
+_config.local.yml
+*.local.yml
+

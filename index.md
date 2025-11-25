@@ -44,6 +44,20 @@ title: 首页
         </div>
 
         <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">时间范围</p>
+          <div class="space-y-2">
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">开始日期</label>
+              <input type="date" id="date-start-filter" class="w-full bg-darkbg border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" onchange="filterEvents()">
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400 mb-1">结束日期</label>
+              <input type="date" id="date-end-filter" class="w-full bg-darkbg border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:border-brand focus:ring-1 focus:ring-brand" onchange="filterEvents()">
+            </div>
+          </div>
+        </div>
+
+        <div>
           <button onclick="resetFilters()" class="w-full py-2 bg-brand/10 text-brand text-xs font-bold rounded hover:bg-brand/20 transition">重置筛选</button>
         </div>
       </div>
@@ -59,6 +73,7 @@ title: 首页
       <div class="flex gap-2">
         <button id="list-view-btn" onclick="switchView('list')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 transition">列表视图</button>
         <button id="calendar-view-btn" onclick="switchView('calendar')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500 transition">日历视图</button>
+        <button id="map-view-btn" onclick="switchView('map')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 text-gray-500 transition">地图视图</button>
       </div>
     </div>
 
@@ -97,6 +112,8 @@ title: 首页
 
           <div class="conference-card bg-cardbg border border-gray-700 rounded-xl p-5 hover:border-brand/50 transition cursor-pointer group relative overflow-hidden" 
                data-type="{{ type_value }}"
+               data-date-start="{{ conference.date_start }}"
+               data-date-end="{{ conference.date_end }}"
                onclick="window.location.href='{{ conference.url | relative_url }}'">
             <div class="flex gap-4">
               <div class="flex-shrink-0 flex flex-col items-center justify-center bg-darkbg w-16 h-16 rounded-lg border border-gray-700 group-hover:border-brand group-hover:text-brand transition">
@@ -150,8 +167,23 @@ title: 首页
         <!-- 日历视图将通过 JavaScript 动态生成 -->
       </div>
     </div>
+
+    <div id="map-view" class="hidden">
+      <div id="map-container" class="bg-cardbg border border-gray-700 rounded-xl overflow-hidden" style="height: 600px;">
+        <!-- 地图将通过 JavaScript 动态生成 -->
+        <div class="flex items-center justify-center h-full text-gray-400">
+          <div class="text-center">
+            <div class="mb-2">🗺️</div>
+            <div>正在加载地图...</div>
+          </div>
+        </div>
+      </div>
+      <div class="mt-4 text-sm text-gray-400">
+        <p>📍 地图使用高德地图（审图号：GS(2023)2650号）</p>
+      </div>
+    </div>
     
-    <div class="mt-8 text-center">
+    <div id="view-footer" class="mt-8 text-center">
       <p class="text-gray-500 text-sm">-- 到底了，去 <a href="https://github.com/{{ site.social.github }}" target="_blank" class="text-brand hover:underline">GitHub</a> 提交更多信息吧 --</p>
     </div>
   </section>
@@ -242,26 +274,47 @@ title: 首页
 
   // 当前视图状态
   let currentView = 'list';
+  let mapInstance = null;
+  let mapMarkers = [];
+  
+  // 高德地图API密钥（从Jekyll配置中获取）
+  const AMAP_KEY = '{{ site.amap_key }}' || '';
 
   // 视图切换
   function switchView(view) {
     currentView = view;
     const listView = document.getElementById('list-view');
     const calendarView = document.getElementById('calendar-view');
+    const mapView = document.getElementById('map-view');
+    const viewFooter = document.getElementById('view-footer');
     const listBtn = document.getElementById('list-view-btn');
     const calendarBtn = document.getElementById('calendar-view-btn');
+    const mapBtn = document.getElementById('map-view-btn');
+
+    // 隐藏所有视图
+    listView.classList.add('hidden');
+    calendarView.classList.add('hidden');
+    mapView.classList.add('hidden');
+    
+    // 重置按钮样式
+    listBtn.classList.add('text-gray-500');
+    calendarBtn.classList.add('text-gray-500');
+    mapBtn.classList.add('text-gray-500');
 
     if (view === 'list') {
       listView.classList.remove('hidden');
-      calendarView.classList.add('hidden');
       listBtn.classList.remove('text-gray-500');
-      calendarBtn.classList.add('text-gray-500');
-    } else {
-      listView.classList.add('hidden');
+      viewFooter.classList.remove('hidden');
+    } else if (view === 'calendar') {
       calendarView.classList.remove('hidden');
-      listBtn.classList.add('text-gray-500');
       calendarBtn.classList.remove('text-gray-500');
+      viewFooter.classList.remove('hidden');
       renderCalendar();
+    } else if (view === 'map') {
+      mapView.classList.remove('hidden');
+      mapBtn.classList.remove('text-gray-500');
+      viewFooter.classList.add('hidden');
+      renderMap();
     }
     filterEvents();
   }
@@ -271,29 +324,8 @@ title: 首页
     const container = document.getElementById('calendar-container');
     if (!container) return;
 
-    // 获取筛选条件
-    const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
-    const selectedTypes = Array.from(checkedBoxes)
-      .filter(cb => cb.value && cb.id !== 'only-open')
-      .map(cb => cb.value);
-    const onlyOpen = document.getElementById('only-open')?.checked;
-    const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
-
-    // 筛选会议
-    const filteredConferences = conferencesData.filter(conf => {
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(conf.type);
-      const matchesSearch = searchTerm === '' || 
-        conf.title.toLowerCase().includes(searchTerm) ||
-        conf.location.toLowerCase().includes(searchTerm) ||
-        (conf.tags && conf.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
-      
-      let matchesDeadline = true;
-      if (onlyOpen && conf.deadline && conf.deadline !== 'N/A') {
-        matchesDeadline = new Date(conf.deadline) > new Date();
-      }
-      
-      return matchesType && matchesSearch && matchesDeadline;
-    });
+    // 使用统一的筛选函数
+    const filteredConferences = getFilteredConferences();
 
     // 按月份分组会议
     const conferencesByMonth = {};
@@ -393,40 +425,113 @@ title: 首页
         cb.checked = false;
       }
     });
+    // 重置时间范围
+    document.getElementById('date-start-filter').value = '';
+    document.getElementById('date-end-filter').value = '';
     filterEvents();
   }
 
-  // 增强筛选功能
-  const originalFilterEvents = window.filterEvents;
-  window.filterEvents = function() {
+  // 获取筛选后的会议数据
+  function getFilteredConferences() {
     const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
     const selectedTypes = Array.from(checkedBoxes)
       .filter(cb => cb.value && cb.id !== 'only-open')
       .map(cb => cb.value);
     const onlyOpen = document.getElementById('only-open')?.checked;
     const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
+    const dateStartFilter = document.getElementById('date-start-filter')?.value || '';
+    const dateEndFilter = document.getElementById('date-end-filter')?.value || '';
+
+    return conferencesData.filter(conf => {
+      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(conf.type);
+      const matchesSearch = searchTerm === '' || 
+        conf.title.toLowerCase().includes(searchTerm) ||
+        conf.location.toLowerCase().includes(searchTerm) ||
+        (conf.tags && conf.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
+      
+      let matchesDeadline = true;
+      if (onlyOpen && conf.deadline && conf.deadline !== 'N/A') {
+        matchesDeadline = new Date(conf.deadline) > new Date();
+      }
+
+      // 时间范围筛选
+      let matchesDateRange = true;
+      if (dateStartFilter || dateEndFilter) {
+        const confStartDate = new Date(conf.dateStart);
+        const confEndDate = new Date(conf.dateEnd || conf.dateStart);
+        
+        if (dateStartFilter) {
+          const startFilterDate = new Date(dateStartFilter);
+          // 会议结束日期必须在筛选开始日期之后
+          matchesDateRange = matchesDateRange && confEndDate >= startFilterDate;
+        }
+        if (dateEndFilter) {
+          const endFilterDate = new Date(dateEndFilter);
+          // 会议开始日期必须在筛选结束日期之前
+          matchesDateRange = matchesDateRange && confStartDate <= endFilterDate;
+        }
+      }
+      
+      return matchesType && matchesSearch && matchesDeadline && matchesDateRange;
+    });
+  }
+
+  // 增强筛选功能
+  const originalFilterEvents = window.filterEvents;
+  window.filterEvents = function() {
+    const filteredConferences = getFilteredConferences();
     
+    // 列表视图筛选
     const cards = document.querySelectorAll('.conference-card');
     cards.forEach(card => {
       const cardType = card.dataset.type || '';
+      const cardDateStart = card.dataset.dateStart || '';
+      const cardDateEnd = card.dataset.dateEnd || cardDateStart;
       const text = card.textContent.toLowerCase();
       const deadlineText = card.textContent;
       const deadlineMatch = deadlineText.match(/截稿: (\d{4}-\d{2}-\d{2})/);
       
+      const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
+      const selectedTypes = Array.from(checkedBoxes)
+        .filter(cb => cb.value && cb.id !== 'only-open')
+        .map(cb => cb.value);
+      const onlyOpen = document.getElementById('only-open')?.checked;
+      const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
+      const dateStartFilter = document.getElementById('date-start-filter')?.value || '';
+      const dateEndFilter = document.getElementById('date-end-filter')?.value || '';
+      
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(cardType);
       const matchesSearch = text.includes(searchTerm);
       
-      // 处理截稿日期筛选逻辑，与日历视图保持一致
       let matchesDeadline = true;
       if (onlyOpen) {
         if (deadlineMatch) {
-          // 有截稿日期，检查是否未过期
           matchesDeadline = new Date(deadlineMatch[1]) > new Date();
         }
-        // 如果没有截稿日期（deadlineMatch === null），matchesDeadline 保持为 true（显示）
+      }
+
+      let matchesDateRange = true;
+      if (dateStartFilter || dateEndFilter) {
+        if (cardDateStart) {
+          const confStartDate = new Date(cardDateStart);
+          const confEndDate = new Date(cardDateEnd);
+          
+          if (dateStartFilter) {
+            const startFilterDate = new Date(dateStartFilter);
+            // 会议结束日期必须在筛选开始日期之后
+            matchesDateRange = matchesDateRange && confEndDate >= startFilterDate;
+          }
+          if (dateEndFilter) {
+            const endFilterDate = new Date(dateEndFilter);
+            // 会议开始日期必须在筛选结束日期之前
+            matchesDateRange = matchesDateRange && confStartDate <= endFilterDate;
+          }
+        } else {
+          matchesDateRange = false;
+        }
       }
       
-      if (matchesType && matchesSearch && matchesDeadline) {
+      if (matchesType && matchesSearch && matchesDeadline && matchesDateRange) {
         card.style.display = '';
       } else {
         card.style.display = 'none';
@@ -437,7 +542,164 @@ title: 首页
     if (currentView === 'calendar') {
       renderCalendar();
     }
+    
+    // 如果当前是地图视图，重新渲染以应用筛选
+    if (currentView === 'map') {
+      renderMap();
+    }
   };
+
+  // 渲染地图视图
+  function renderMap() {
+    const container = document.getElementById('map-container');
+    if (!container) return;
+
+    // 检查API密钥是否配置
+    if (!AMAP_KEY || AMAP_KEY === '') {
+      container.innerHTML = `
+        <div class="flex items-center justify-center h-full text-gray-400">
+          <div class="text-center p-6">
+            <div class="mb-2 text-4xl">🗺️</div>
+            <div class="mb-2 font-semibold">地图功能需要配置高德地图API密钥</div>
+            <div class="text-sm text-gray-500 mb-4">请在 _config.yml 中配置 amap_key</div>
+            <a href="https://console.amap.com/" target="_blank" class="text-brand hover:underline text-sm">
+              前往高德开放平台申请密钥 →
+            </a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 如果地图未初始化，先加载高德地图API
+    if (!window.AMap) {
+      container.innerHTML = `
+        <div class="flex items-center justify-center h-full text-gray-400">
+          <div class="text-center">
+            <div class="mb-2">🗺️</div>
+            <div>正在加载地图...</div>
+          </div>
+        </div>
+      `;
+      
+      // 动态加载高德地图API
+      const script = document.createElement('script');
+      script.src = `https://webapi.amap.com/maps?v=2.0&key=${AMAP_KEY}&callback=initAMap`;
+      script.async = true;
+      script.defer = true;
+      script.onerror = function() {
+        container.innerHTML = `
+          <div class="flex items-center justify-center h-full text-gray-400">
+            <div class="text-center p-6">
+              <div class="mb-2 text-4xl">⚠️</div>
+              <div class="mb-2 font-semibold">地图加载失败</div>
+              <div class="text-sm text-gray-500 mb-4">请检查API密钥是否正确配置</div>
+            </div>
+          </div>
+        `;
+      };
+      document.head.appendChild(script);
+      
+      // 设置回调函数
+      window.initAMap = function() {
+        initMap();
+      };
+      
+      return;
+    }
+
+    initMap();
+  }
+
+  // 初始化地图
+  function initMap() {
+    const container = document.getElementById('map-container');
+    if (!container) return;
+
+    // 如果地图已存在，先销毁
+    if (mapInstance) {
+      mapInstance.destroy();
+      mapMarkers = [];
+    }
+
+    // 创建地图实例
+    mapInstance = new AMap.Map('map-container', {
+      zoom: 5,
+      center: [104.0, 35.0], // 中国中心位置
+      viewMode: '3D',
+      mapStyle: 'amap://styles/darkblue' // 深色主题，适配网站风格
+    });
+
+    // 获取筛选后的会议
+    const filteredConferences = getFilteredConferences();
+
+    if (filteredConferences.length === 0) {
+      container.innerHTML = `
+        <div class="flex items-center justify-center h-full text-gray-400">
+          <div class="text-center">
+            <div class="mb-2">🗺️</div>
+            <div>暂无符合条件的会议</div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // 地址解析和标记点
+    const geocoder = new AMap.Geocoder();
+    let geocodeCount = 0;
+    const totalCount = filteredConferences.length;
+
+    filteredConferences.forEach((conf, index) => {
+      // 解析地址（格式：省份 · 城市）
+      const address = conf.location.replace(' · ', '');
+      
+      geocoder.getLocation(address, (status, result) => {
+        geocodeCount++;
+        
+        if (status === 'complete' && result.geocodes.length > 0) {
+          const location = result.geocodes[0].location;
+          
+          // 创建标记点
+          const marker = new AMap.Marker({
+            position: [location.lng, location.lat],
+            title: conf.title,
+            map: mapInstance
+          });
+
+          // 创建信息窗口
+          const infoWindow = new AMap.InfoWindow({
+            content: `
+              <div style="color: #333; padding: 10px; min-width: 200px;">
+                <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${conf.title}</h3>
+                <p style="margin: 4px 0; font-size: 12px; color: #666;">📍 ${conf.location}</p>
+                <p style="margin: 4px 0; font-size: 12px; color: #666;">🕒 ${conf.dateStart}${conf.dateEnd !== conf.dateStart ? ' - ' + conf.dateEnd : ''}</p>
+                ${conf.deadline && conf.deadline !== 'N/A' ? `<p style="margin: 4px 0; font-size: 12px; color: #f97316;">⚠️ 截稿: ${conf.deadline}</p>` : ''}
+                <a href="${conf.url}" target="_blank" style="display: inline-block; margin-top: 8px; padding: 4px 12px; background: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;">查看详情</a>
+              </div>
+            `,
+            offset: new AMap.Pixel(0, -30)
+          });
+
+          marker.on('click', () => {
+            infoWindow.open(mapInstance, marker.getPosition());
+          });
+
+          mapMarkers.push(marker);
+        }
+
+        // 所有地址解析完成后，调整地图视野
+        if (geocodeCount === totalCount && mapMarkers.length > 0) {
+          const bounds = new AMap.Bounds();
+          mapMarkers.forEach(marker => {
+            bounds.extend(marker.getPosition());
+          });
+          mapInstance.setBounds(bounds, false, [50, 50, 50, 50]);
+        }
+      });
+    });
+  }
 </script>
+
 
 

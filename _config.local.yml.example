@@ -1,0 +1,13 @@
+# 本地配置文件示例
+# 
+# 使用方法：
+# 1. 复制此文件为 _config.local.yml
+# 2. 填写您的高德地图API密钥
+# 3. _config.local.yml 已添加到 .gitignore，不会被提交到GitHub
+#
+# 注意：Jekyll会自动合并 _config.yml 和 _config.local.yml
+# 如果同时存在，_config.local.yml 中的配置会覆盖 _config.yml
+
+# 高德地图API密钥
+amap_key: "您的高德地图API密钥"
+
