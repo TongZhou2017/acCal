@@ -75,6 +75,13 @@ jobs:
         run: |
           python scripts/issue_to_md.py
 
+      # 4.5. 排除工作流文件（GitHub 不允许通过 PR 修改工作流）
+      - name: 排除工作流文件
+        if: steps.check_issue.outputs.is_conference == 'true'
+        run: |
+          git restore .github/workflows/ || true
+          git restore .github/ISSUE_TEMPLATE/ || true
+
       # 5. 创建 Pull Request
       - name: 创建 Pull Request (PR)
         if: steps.check_issue.outputs.is_conference == 'true'
@@ -93,3 +100,6 @@ jobs:
             Closes #${{ github.event.issue.number }}
           branch: 'issue-pr-${{ github.event.issue.number }}'
           delete-branch: true
+          exclude-paths: |
+            .github/workflows/**
+            .github/ISSUE_TEMPLATE/**
