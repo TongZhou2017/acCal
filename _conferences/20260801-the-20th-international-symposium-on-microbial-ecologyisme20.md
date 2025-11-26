@@ -1,53 +1,20 @@
-## 📋 会议信息摘要
-
-| 项目 | 状态 | 内容 |
-|------|------|------|
-| **会议名称** | ✅ | The 20th International Symposium on Microbial Ecology（ISME20） |
-| **届数** | ✅ | 20th |
-| **学科分类** | ✅ | 🌿 生命科学 (Life Sciences) |
-| **细分标签** | ✅ | 微生物生态学 |
-| **会议地点** | ✅ | 奥克兰 |
-| **会议时间** | ✅ | 2026-08-01 |
-| **截止日期** | ⚠️ 可选 | *(未填写)* |
-| **官方网址** | ✅ | https://isme-microbes.org/isme20-sessions/ |
-| **会议简介** | ✅ | 第20届国际微生物生态学研讨会（ISME20, The 20th International Symposium on Microbial Ecology）将于2026年8月隆重举行。这一全球顶级的微生物生态学学术盛会将汇聚世界各地的专家学者，共同探讨微生物在环境、人类健康与生物技术等领域的前沿进展，展示微生物生态学在全球范围内的深远影响。
-
-本次大会科学议程内容丰富，亮点纷呈。除多场激励人心的大... |
-
-### 📊 完整性检查
-
-✅ **所有必需字段已填写**
-
-✅ **URL 格式正确**
-
-✅ **日期格式正确**
-
+---
+layout: "conference"
+title: "The 20th International Symposium on Microbial Ecology（ISME20）"
+edition: "第20th届"
+discipline: "🌿 生命科学 (Life Sciences)"
+location: "奥克兰"
+date_start: "2026-08-01"
+date_end: "2026-08-01"
+deadline: "N/A"
+url: "https://isme-microbes.org/isme20-sessions/"
+tags: ["\u5fae\u751f\u7269\u751f\u6001\u5b66"]
+submitted_by: "TongZhou2017"
+publishDate: "2025-11-26T23:11:35.387009"
+draft: true
 ---
 
-## 📝 完整信息详情
-
-### 基本信息
-
-- **会议名称**: The 20th International Symposium on Microbial Ecology（ISME20）
-- **届数**: 20th
-- **学科分类**: 🌿 生命科学 (Life Sciences)
-- **细分标签**: 微生物生态学
-- **会议地点**: 奥克兰
-
-### 时间信息
-
-- **会议时间**: 2026-08-01
-  - 解析后开始日期: 2026-08-01
-  - 解析后结束日期: 2026-08-01
-- **截止日期**: *(未填写)*
-  - 解析后日期: *(无法解析)*
-
-### 链接信息
-
-- **官方网址**: https://isme-microbes.org/isme20-sessions/
-  - URL 验证: ✅ 通过
-
-### 会议简介
+## 会议简介
 
 第20届国际微生物生态学研讨会（ISME20, The 20th International Symposium on Microbial Ecology）将于2026年8月隆重举行。这一全球顶级的微生物生态学学术盛会将汇聚世界各地的专家学者，共同探讨微生物在环境、人类健康与生物技术等领域的前沿进展，展示微生物生态学在全球范围内的深远影响。
 
@@ -93,33 +60,3 @@ ISME20专题分会场：
 理论微生物生态学
 生命之树：微生物多样性新视角
 深海世界：海洋微生物的多样性与隐秘能量
-
----
-
-## 🔗 相关信息
-
-- **来源 Issue**: [#13](https://github.com/TongZhou2017/acCal/issues/13)
-- **提交者**: @TongZhou2017
-- **生成时间**: 2025-11-26 23:11:35
-
----
-
-## ⚠️ 审核提示
-
-1. **URL 验证**: 请确认官方网址是否为官方信息源，拒绝第三方中介链接
-2. **会议真实性**: 请验证会议是否为合法学术会议，拒绝掠夺性会议
-3. **信息准确性**: 请核对日期、地点等信息是否准确
-4. **格式检查**: 确认生成的 Markdown 文件格式正确
-5. **⚠️ 重要**: 合并前请将会议文件的 `draft: true` 改为 `draft: false`，否则会议不会在网站上显示
-
-### 📝 如何发布会议
-
-合并 PR 后，需要手动编辑会议文件，将 `draft: true` 改为 `draft: false`：
-
-```yaml
-draft: false  # 改为 false 后会议才会在网站上显示
-```
-
-或者，如果审核通过，可以在合并 PR 时直接修改文件中的 `draft` 字段。
-
-**此 PR 由 Issue #13 自动生成，合并后将自动关闭该 Issue。**
