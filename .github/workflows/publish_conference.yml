@@ -1,0 +1,121 @@
+name: 自动发布会议
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  publish_conference:
+    # 仅处理合并到 main 分支的 PR
+    if: github.event.pull_request.merged == true && github.event.pull_request.base.ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: 检查代码
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      
+      - name: 查找新添加的会议文件
+        id: find_conferences
+        run: |
+          # 获取 PR 中修改的文件
+          echo "PR Base SHA: ${{ github.event.pull_request.base.sha }}"
+          echo "PR Merge SHA: ${{ github.event.pull_request.merge_commit_sha }}"
+          
+          # 获取 PR 中新增或修改的文件
+          PR_FILES=$(git diff --name-only --diff-filter=AM ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.merge_commit_sha }} || git diff --name-only --diff-filter=AM HEAD~1 HEAD)
+          
+          echo "PR 中修改的文件:"
+          echo "$PR_FILES"
+          
+          CONFERENCE_FILES=""
+          for file in $PR_FILES; do
+            if [[ "$file" == _conferences/*.md ]]; then
+              CONFERENCE_FILES="$CONFERENCE_FILES $file"
+            fi
+          done
+          
+          if [ -z "$CONFERENCE_FILES" ]; then
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "⚠️ 没有找到新的会议文件"
+            # 尝试查找所有 _conferences 目录下的文件
+            echo "检查 _conferences 目录下的所有文件:"
+            ls -la _conferences/ || echo "目录不存在"
+          else
+            echo "found=true" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CONFERENCE_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "✅ 找到会议文件: $CONFERENCE_FILES"
+          fi
+      
+      - name: 自动将 draft 改为 false
+        if: steps.find_conferences.outputs.found == 'true'
+        id: update_draft
+        run: |
+          FILES="${{ steps.find_conferences.outputs.files }}"
+          CHANGED=false
+          
+          for file in $FILES; do
+            file=$(echo "$file" | xargs)  # 去除空格
+            if [ -f "$file" ]; then
+              echo "📝 处理文件: $file"
+              
+              # 检查当前 draft 状态
+              if grep -q "^draft: true" "$file"; then
+                echo "  当前状态: draft: true"
+                # 使用 sed 将 draft: true 改为 draft: false
+                sed -i 's/^draft: true$/draft: false/' "$file"
+                echo "  ✅ 已将 draft 设置为 false"
+                CHANGED=true
+              elif grep -q "^draft: false" "$file"; then
+                echo "  ℹ️  已经是 draft: false，跳过"
+              else
+                echo "  ⚠️  未找到 draft 字段，添加 draft: false"
+                # 在 front matter 中添加 draft: false
+                sed -i '/^---$/a draft: false' "$file" | head -1
+                CHANGED=true
+              fi
+              
+              # 显示修改后的内容（前20行）
+              echo "  文件内容预览:"
+              head -20 "$file" | grep -E "(draft:|title:)" || echo "  (未找到相关字段)"
+            else
+              echo "⚠️  文件不存在: $file"
+            fi
+          done
+          
+          if [ "$CHANGED" = "true" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: 提交更改
+        if: steps.find_conferences.outputs.found == 'true' && steps.update_draft.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          
+          # 添加所有修改的会议文件
+          FILES="${{ steps.find_conferences.outputs.files }}"
+          for file in $FILES; do
+            file=$(echo "$file" | xargs)
+            if [ -f "$file" ]; then
+              git add "$file"
+            fi
+          done
+          
+          # 检查是否有更改需要提交
+          if git diff --staged --quiet; then
+            echo "ℹ️  没有需要提交的更改"
+          else
+            git commit -m "chore: 自动发布会议 (来自 PR #${{ github.event.pull_request.number }})"
+            git push
+            echo "✅ 已提交并推送更改"
+          fi
+

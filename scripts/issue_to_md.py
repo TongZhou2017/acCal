@@ -208,7 +208,7 @@ def generate_markdown(issue_data_json):
     if description:
         content = f"\n## 会议简介\n\n{description}\n"
     else:
-        content = f"\n\n请在审核时补充会议简介...\n"
+    content = f"\n\n请在审核时补充会议简介...\n"
     
     markdown_content = yaml_fm + content
     
