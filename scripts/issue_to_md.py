@@ -46,6 +46,18 @@ def generate_markdown(issue_data_json):
     
     # 解析 Issue 数据
     data = issue_data_json
+    
+    # 检查必需字段
+    if 'conf_name' not in data and 'conference_name' not in data:
+        # 尝试查找可能的字段名变体
+        possible_keys = [k for k in data.keys() if 'name' in k.lower() or 'title' in k.lower()]
+        if possible_keys:
+            conf_name = data[possible_keys[0]]
+            print(f"⚠️  使用字段 '{possible_keys[0]}' 作为会议名称")
+        else:
+            raise KeyError("找不到会议名称字段。可用字段: " + ", ".join(data.keys()))
+    else:
+        conf_name = data.get('conf_name') or data.get('conference_name', '')
 
     # 提取核心字段，并清理 tags
     tags_list = [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()]
@@ -64,26 +76,33 @@ def generate_markdown(issue_data_json):
             # 有"届"但没有"第"，如"十届"
             edition = f"第{edition}"
         # 如果已经有"第"和"届"，直接使用
-        full_title = f"{edition}{data['conf_name']}"
+        full_title = f"{edition}{conf_name}"
     else:
-        full_title = data['conf_name']
+        full_title = conf_name
     
     # 转换为 YAML Front Matter 格式（Jekyll 格式）
+    # 使用 .get() 方法安全访问字段，并提供默认值
     front_matter = {
         "layout": "conference",  # 使用 conference 布局
         "title": full_title,
         "edition": edition if edition else None,  # 保存届数信息，便于后续使用
-        "discipline": data['discipline_group'],
+        "discipline": data.get('discipline_group') or data.get('discipline', ''),
         "location": data.get('location', 'TBD'),
-        "date_start": data['date_start'],
-        "date_end": data.get('date_end', data['date_start']), # 如果结束日期缺失，使用开始日期
+        "date_start": data.get('date_start') or data.get('date_start', ''),
+        "date_end": data.get('date_end') or data.get('date_start', ''), # 如果结束日期缺失，使用开始日期
         "deadline": data.get('deadline', 'N/A'),
-        "url": data['url'],
+        "url": data.get('url') or data.get('website', ''),
         "tags": tags_list,
         "submitted_by": data.get('submitter_name', os.environ.get('ISSUE_AUTHOR', 'Community')), # 实际Action中会获取提交者
         "publishDate": datetime.now().isoformat(),
         "draft": True # 初始状态为草稿，等待人工审核
     }
+    
+    # 验证必需字段
+    required_fields = ['title', 'discipline', 'date_start', 'url']
+    missing_fields = [field for field in required_fields if not front_matter.get(field)]
+    if missing_fields:
+        raise ValueError(f"缺少必需字段: {', '.join(missing_fields)}")
 
     # 格式化 Front Matter
     yaml_fm = "---"
@@ -133,6 +152,10 @@ if __name__ == "__main__":
         # 从环境变量读取 Issue 数据（GitHub Actions 环境）
         try:
             issue_data = json.loads(issue_data_env)
+            # 调试：打印解析后的数据结构
+            print("=== 调试信息：解析的 Issue 数据 ===")
+            print(json.dumps(issue_data, indent=2, ensure_ascii=False))
+            print("=====================================")
         except json.JSONDecodeError as e:
             print(f"解析 ISSUE_DATA 环境变量失败: {e}", file=sys.stderr)
             sys.exit(1)
