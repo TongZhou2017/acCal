@@ -144,7 +144,7 @@ def generate_markdown(issue_data_json):
     else:
         tags_list = []
     
-    # 处理届数：如果有届数，将其添加到标题前
+    # 处理届数：规范化届数格式，但不合并到标题中
     edition = data.get('edition', '').strip()
     if edition:
         # 规范化届数格式：确保有"第"和"届"
@@ -158,9 +158,6 @@ def generate_markdown(issue_data_json):
             # 有"届"但没有"第"，如"十届"
             edition = f"第{edition}"
         # 如果已经有"第"和"届"，直接使用
-        full_title = f"{edition}{conf_name}"
-    else:
-        full_title = conf_name
     
     # 处理日期：解析并格式化
     date_start_raw = data.get('date_start', '').strip()
@@ -174,7 +171,7 @@ def generate_markdown(issue_data_json):
     # 转换为 YAML Front Matter 格式（Jekyll 格式）
     front_matter = {
         "layout": "conference",  # 使用 conference 布局
-        "title": full_title,
+        "title": conf_name,  # 标题不包含届数，届数单独保存在 edition 字段
         "edition": edition if edition else None,  # 保存届数信息，便于后续使用
         "discipline": data.get('discipline_group', ''),
         "location": data.get('location', 'TBD'),
@@ -199,7 +196,17 @@ def generate_markdown(issue_data_json):
     for key, value in front_matter.items():
         if isinstance(value, list):
             yaml_fm += f"\n{key}: {json.dumps(value)}"
+        elif isinstance(value, bool):
+            # 布尔值直接输出，不加引号
+            yaml_fm += f"\n{key}: {str(value).lower()}"
+        elif value is None:
+            # None 值输出为 null
+            yaml_fm += f"\n{key}: null"
+        elif isinstance(value, (int, float)):
+            # 数字直接输出，不加引号
+            yaml_fm += f"\n{key}: {value}"
         else:
+            # 字符串需要加引号
             yaml_fm += f"\n{key}: \"{value}\""
     yaml_fm += "\n---\n"
     
