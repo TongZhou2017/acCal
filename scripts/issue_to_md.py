@@ -169,6 +169,7 @@ def generate_markdown(issue_data_json):
     deadline = parse_date(deadline_raw) if deadline_raw else 'N/A'
     
     # 转换为 YAML Front Matter 格式（Jekyll 格式）
+    official_url = data.get('url', '')
     front_matter = {
         "layout": "conference",  # 使用 conference 布局
         "title": conf_name,  # 标题不包含届数，届数单独保存在 edition 字段
@@ -178,7 +179,8 @@ def generate_markdown(issue_data_json):
         "date_start": date_start,
         "date_end": date_end,
         "deadline": deadline,
-        "url": data.get('url', ''),
+        "url": official_url,  # 保留url字段以兼容现有代码
+        "website": official_url,  # 添加website字段，避免与Jekyll的page.url冲突
         "tags": tags_list,
         "submitted_by": data.get('submitter_name', os.environ.get('ISSUE_AUTHOR', 'Community')), # 实际Action中会获取提交者
         "publishDate": datetime.now().isoformat(),

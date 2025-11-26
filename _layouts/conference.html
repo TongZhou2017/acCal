@@ -74,8 +74,18 @@ layout: default
 
       <footer class="pt-6 border-t border-gray-700">
         <div class="flex flex-col sm:flex-row gap-4 mb-4">
-          {% if page.url %}
-            <a href="{{ page.url }}" target="_blank" rel="noopener" class="flex-1 bg-brand hover:bg-brand-light text-white text-center py-2.5 rounded-lg font-medium transition shadow-lg shadow-brand/20">
+          {% comment %} 在Jekyll中，page.url是页面路径，我们需要访问front matter中的url字段 {% endcomment %}
+          {% comment %} 最简单的方法：将front matter中的url字段改为website，避免与Jekyll的page.url冲突 {% endcomment %}
+          {% comment %} 但为了兼容现有数据，我们同时检查url和website字段 {% endcomment %}
+          {% assign official_url = null %}
+          {% if page.website %}
+            {% assign official_url = page.website %}
+          {% elsif page.url contains 'http' %}
+            {% comment %} 如果page.url包含http，说明它是front matter中的url字段（Jekyll将其用于生成页面URL） {% endcomment %}
+            {% assign official_url = page.url %}
+          {% endif %}
+          {% if official_url and official_url != '' %}
+            <a href="{{ official_url }}" target="_blank" rel="noopener" class="flex-1 bg-brand hover:bg-brand-light text-white text-center py-2.5 rounded-lg font-medium transition shadow-lg shadow-brand/20">
               访问官方网站
             </a>
           {% endif %}
