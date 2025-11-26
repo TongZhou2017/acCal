@@ -69,16 +69,22 @@ def map_issue_fields(data):
         '9_': 'description',        # 会议简介
     }
     
+    # 调试：打印原始数据键
+    print(f"🔍 原始数据键: {list(data.keys())}")
+    
     # 首先尝试使用映射表
     for parser_key, standard_key in field_mapping.items():
         if parser_key in data:
             mapped[standard_key] = data[parser_key]
+            print(f"✅ 映射: {parser_key} -> {standard_key} = {data[parser_key][:50] if isinstance(data[parser_key], str) else data[parser_key]}")
     
     # 如果标准字段名已存在，直接使用（兼容旧格式）
     for key in ['conf_name', 'edition', 'discipline_group', 'tags', 'location', 
                  'date_start', 'deadline', 'url', 'description']:
         if key in data and key not in mapped:
             mapped[key] = data[key]
+    
+    print(f"📋 映射后的键: {list(mapped.keys())}")
     
     return mapped
 
