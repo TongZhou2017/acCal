@@ -1,7 +1,86 @@
 import os
 import json
 import sys
+import re
 from datetime import datetime
+
+
+# 日期解析函数
+def parse_date(date_str, extract_end=False):
+    """将各种日期格式转换为 YYYY-MM-DD 格式
+    
+    Args:
+        date_str: 日期字符串
+        extract_end: 如果为True，尝试提取结束日期（用于日期范围）
+    
+    Returns:
+        日期字符串 (YYYY-MM-DD) 或 None
+    """
+    if not date_str or date_str.strip() == '':
+        return None
+    
+    date_str = date_str.strip()
+    
+    # 处理格式：2025年12月10-13日
+    match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})(?:-(\d{1,2}))?日?', date_str)
+    if match:
+        year = match.group(1)
+        month = match.group(2).zfill(2)
+        if extract_end and match.group(4):
+            day = match.group(4).zfill(2)  # 结束日期
+        else:
+            day = match.group(3).zfill(2)  # 开始日期
+        return f"{year}-{month}-{day}"
+    
+    # 处理格式：2025-12-10 或 2025-12-10 至 2025-12-13
+    match = re.match(r'(\d{4})-(\d{2})-(\d{2})(?:\s*[至-]\s*(\d{4})-(\d{2})-(\d{2}))?', date_str)
+    if match:
+        if extract_end and match.group(4):
+            return f"{match.group(4)}-{match.group(5)}-{match.group(6)}"
+        else:
+            return f"{match.group(1)}-{match.group(2)}-{match.group(3)}"
+    
+    # 处理格式：2025/12/10
+    match = re.match(r'(\d{4})/(\d{1,2})/(\d{1,2})', date_str)
+    if match:
+        year = match.group(1)
+        month = match.group(2).zfill(2)
+        day = match.group(3).zfill(2)
+        return f"{year}-{month}-{day}"
+    
+    return date_str  # 如果无法解析，返回原值
+
+
+# 字段映射函数
+def map_issue_fields(data):
+    """将 github-issue-parser 输出的字段名映射到标准字段名"""
+    mapped = {}
+    
+    # 字段映射表：解析器输出的字段名 -> 标准字段名
+    field_mapping = {
+        '1_': 'conf_name',           # 会议名称
+        '2_': 'edition',             # 届数
+        '3_': 'discipline_group',    # 一级学科分类
+        '4_': 'tags',                # 细分标签
+        '5_': 'location',            # 会议地点
+        '6__yyyymmdd': 'date_start', # 会议时间
+        '7__yyyymmdd': 'deadline',   # 截止日期
+        '8___': 'url',               # 官方网址
+        '9_': 'description',        # 会议简介
+    }
+    
+    # 首先尝试使用映射表
+    for parser_key, standard_key in field_mapping.items():
+        if parser_key in data:
+            mapped[standard_key] = data[parser_key]
+    
+    # 如果标准字段名已存在，直接使用（兼容旧格式）
+    for key in ['conf_name', 'edition', 'discipline_group', 'tags', 'location', 
+                 'date_start', 'deadline', 'url', 'description']:
+        if key in data and key not in mapped:
+            mapped[key] = data[key]
+    
+    return mapped
 
 
 # 文件路径和文件名生成函数
@@ -44,23 +123,20 @@ def slugify(text):
 def generate_markdown(issue_data_json):
     """将Issue数据转换为Jekyll使用的Markdown文件（输出到 _conferences 集合）"""
     
-    # 解析 Issue 数据
-    data = issue_data_json
+    # 映射字段名
+    data = map_issue_fields(issue_data_json)
     
-    # 检查必需字段
-    if 'conf_name' not in data and 'conference_name' not in data:
-        # 尝试查找可能的字段名变体
-        possible_keys = [k for k in data.keys() if 'name' in k.lower() or 'title' in k.lower()]
-        if possible_keys:
-            conf_name = data[possible_keys[0]]
-            print(f"⚠️  使用字段 '{possible_keys[0]}' 作为会议名称")
-        else:
-            raise KeyError("找不到会议名称字段。可用字段: " + ", ".join(data.keys()))
-    else:
-        conf_name = data.get('conf_name') or data.get('conference_name', '')
+    # 获取会议名称
+    conf_name = data.get('conf_name', '').strip()
+    if not conf_name:
+        raise ValueError("会议名称不能为空")
 
     # 提取核心字段，并清理 tags
-    tags_list = [tag.strip() for tag in data.get('tags', '').split(',') if tag.strip()]
+    tags_str = data.get('tags', '')
+    if isinstance(tags_str, str):
+        tags_list = [tag.strip() for tag in tags_str.split(',') if tag.strip()]
+    else:
+        tags_list = []
     
     # 处理届数：如果有届数，将其添加到标题前
     edition = data.get('edition', '').strip()
@@ -80,18 +156,26 @@ def generate_markdown(issue_data_json):
     else:
         full_title = conf_name
     
+    # 处理日期：解析并格式化
+    date_start_raw = data.get('date_start', '').strip()
+    date_start = parse_date(date_start_raw) or datetime.now().strftime('%Y-%m-%d')
+    # 尝试从日期范围中提取结束日期
+    date_end = parse_date(date_start_raw, extract_end=True) or date_start
+    
+    deadline_raw = data.get('deadline', '').strip()
+    deadline = parse_date(deadline_raw) if deadline_raw else 'N/A'
+    
     # 转换为 YAML Front Matter 格式（Jekyll 格式）
-    # 使用 .get() 方法安全访问字段，并提供默认值
     front_matter = {
         "layout": "conference",  # 使用 conference 布局
         "title": full_title,
         "edition": edition if edition else None,  # 保存届数信息，便于后续使用
-        "discipline": data.get('discipline_group') or data.get('discipline', ''),
+        "discipline": data.get('discipline_group', ''),
         "location": data.get('location', 'TBD'),
-        "date_start": data.get('date_start') or data.get('date_start', ''),
-        "date_end": data.get('date_end') or data.get('date_start', ''), # 如果结束日期缺失，使用开始日期
-        "deadline": data.get('deadline', 'N/A'),
-        "url": data.get('url') or data.get('website', ''),
+        "date_start": date_start,
+        "date_end": date_end,
+        "deadline": deadline,
+        "url": data.get('url', ''),
         "tags": tags_list,
         "submitted_by": data.get('submitter_name', os.environ.get('ISSUE_AUTHOR', 'Community')), # 实际Action中会获取提交者
         "publishDate": datetime.now().isoformat(),
@@ -123,8 +207,8 @@ def generate_markdown(issue_data_json):
     markdown_content = yaml_fm + content
     
     # 生成文件名：使用日期+标题的组合，确保唯一性和可读性
-    date_str = data.get('date_start', datetime.now().strftime('%Y%m%d')).replace('-', '')
-    title_slug = slugify(data['conf_name'])
+    date_str = date_start.replace('-', '')
+    title_slug = slugify(conf_name)
     filename = f"{date_str}-{title_slug}" if title_slug else f"{date_str}-conference"
     
     # 写入文件到 Jekyll 集合目录 _conferences
