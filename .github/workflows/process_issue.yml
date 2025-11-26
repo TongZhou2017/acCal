@@ -9,6 +9,10 @@ jobs:
     # 仅处理使用 conference_submission 模板的新Issue
     # 检查 Issue body 中是否包含会议相关字段，或是否有 pending-review 标签
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: read
     
     steps:
       - name: 调试 - 显示 Issue 信息
