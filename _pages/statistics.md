@@ -82,25 +82,33 @@ permalink: /statistics/
     <!-- 学科领域分布 -->
     <div class="bg-cardbg border border-gray-700 rounded-xl p-6">
       <h2 class="text-xl font-bold text-white mb-4">学科领域分布</h2>
-      <canvas id="disciplineChart" height="300"></canvas>
+      <div style="height: 300px; position: relative;">
+        <canvas id="disciplineChart"></canvas>
+      </div>
     </div>
 
     <!-- 月份分布 -->
     <div class="bg-cardbg border border-gray-700 rounded-xl p-6">
       <h2 class="text-xl font-bold text-white mb-4">月份分布</h2>
-      <canvas id="monthChart" height="300"></canvas>
+      <div style="height: 300px; position: relative;">
+        <canvas id="monthChart"></canvas>
+      </div>
     </div>
 
     <!-- 省份分布 -->
     <div class="bg-cardbg border border-gray-700 rounded-xl p-6">
       <h2 class="text-xl font-bold text-white mb-4">省份分布</h2>
-      <canvas id="provinceChart" height="300"></canvas>
+      <div style="height: 300px; position: relative;">
+        <canvas id="provinceChart"></canvas>
+      </div>
     </div>
 
     <!-- 季度分布 -->
     <div class="bg-cardbg border border-gray-700 rounded-xl p-6">
       <h2 class="text-xl font-bold text-white mb-4">季度分布</h2>
-      <canvas id="quarterChart" height="300"></canvas>
+      <div style="height: 300px; position: relative;">
+        <canvas id="quarterChart"></canvas>
+      </div>
     </div>
   </div>
 
@@ -217,6 +225,14 @@ permalink: /statistics/
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 10,
+        bottom: 10,
+        left: 10,
+        right: 10
+      }
+    },
     plugins: {
       legend: {
         labels: {
@@ -227,19 +243,23 @@ permalink: /statistics/
     scales: {
       y: {
         ticks: {
-          color: '#9CA3AF'
+          color: '#9CA3AF',
+          maxTicksLimit: 10
         },
         grid: {
           color: '#374151'
-        }
+        },
+        beginAtZero: true
       },
       x: {
         ticks: {
-          color: '#9CA3AF'
+          color: '#9CA3AF',
+          maxTicksLimit: 12
         },
         grid: {
           color: '#374151'
-        }
+        },
+        beginAtZero: true
       }
     }
   };
@@ -300,7 +320,7 @@ permalink: /statistics/
   const provinceStats = getProvinceStats();
   const sortedProvinces = Object.entries(provinceStats)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10); // 只显示前10个
+    .slice(0, 8); // 只显示前8个，避免图表过长
   const provinceData = {
     labels: sortedProvinces.map(p => p[0]),
     datasets: [{
@@ -316,7 +336,28 @@ permalink: /statistics/
     data: provinceData,
     options: {
       ...chartOptions,
-      indexAxis: 'y'
+      indexAxis: 'y',
+      scales: {
+        x: {
+          ticks: {
+            color: '#9CA3AF',
+            maxTicksLimit: 8,
+            stepSize: 1
+          },
+          grid: {
+            color: '#374151'
+          },
+          beginAtZero: true
+        },
+        y: {
+          ticks: {
+            color: '#9CA3AF'
+          },
+          grid: {
+            color: '#374151'
+          }
+        }
+      }
     }
   });
 
