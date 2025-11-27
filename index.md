@@ -14,34 +14,46 @@ title: 首页
       
       <div class="space-y-6">
         <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">学科领域</p>
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">学科领域</p>
+            <div class="flex gap-2">
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="select-all-disciplines" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand" onchange="handleSelectAllDisciplines()">
+                <span class="text-xs text-gray-400">全选</span>
+              </label>
+              <label class="flex items-center gap-1 cursor-pointer">
+                <input type="checkbox" id="clear-all-disciplines" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand" onchange="handleClearAllDisciplines()">
+                <span class="text-xs text-gray-400">清除</span>
+              </label>
+            </div>
+          </div>
           <div class="space-y-2">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="life" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="life" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">🌿 生命科学</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="earth" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="earth" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">🌍 地球与环境</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="it" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="it" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">💻 信息与工程</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="physical" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="physical" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">⚛️ 数理化</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="social" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="social" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">📚 人文社科</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="medicine" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="medicine" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">🏥 医学与健康</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="other" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <input type="checkbox" checked value="other" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="handleDisciplineChange()">
               <span class="text-sm">🔬 其他</span>
             </label>
           </div>
@@ -87,7 +99,6 @@ title: 首页
     <div class="flex justify-between items-end mb-6">
       <div>
         <h2 class="text-2xl font-bold text-white">即将召开的会议</h2>
-        <p class="text-gray-400 text-sm mt-1">让学术回归纯粹，把时间还给科研</p>
       </div>
       <div class="flex gap-2">
         <button id="list-view-btn" onclick="switchView('list')" class="bg-cardbg border border-gray-600 px-3 py-1 rounded text-sm hover:bg-gray-700 transition">列表视图</button>
@@ -314,8 +325,11 @@ title: 首页
   // 高德地图API密钥（从Jekyll配置中获取）
   const AMAP_KEY = '{{ site.amap_key }}' || '';
   
-  // 页面加载时初始化标签过滤
+  // 页面加载时初始化
   document.addEventListener('DOMContentLoaded', function() {
+    // 初始化全选框状态
+    updateSelectAllCheckbox();
+    // 初始化标签过滤
     initTagsFilter();
   });
 
@@ -462,25 +476,50 @@ title: 首页
     }
   }
 
-  // 初始化标签过滤选项
-  function initTagsFilter() {
-    const tagsContainer = document.getElementById('tags-filter-container');
-    if (!tagsContainer) return;
+  // 建立标签到学科领域的映射
+  function buildTagDisciplineMap() {
+    const tagDisciplineMap = new Map(); // tag -> Set of disciplines
     
-    // 收集所有唯一的标签
-    const allTags = new Set();
     conferencesData.forEach(conf => {
-      if (conf.tags && Array.isArray(conf.tags)) {
+      if (conf.tags && Array.isArray(conf.tags) && conf.type) {
         conf.tags.forEach(tag => {
-          if (tag && tag.trim()) {
-            allTags.add(tag.trim());
+          const tagKey = tag.trim();
+          if (tagKey) {
+            if (!tagDisciplineMap.has(tagKey)) {
+              tagDisciplineMap.set(tagKey, new Set());
+            }
+            tagDisciplineMap.get(tagKey).add(conf.type);
           }
         });
       }
     });
     
+    return tagDisciplineMap;
+  }
+  
+  // 初始化标签过滤选项
+  function initTagsFilter() {
+    const tagsContainer = document.getElementById('tags-filter-container');
+    if (!tagsContainer) return;
+    
+    // 建立标签到学科领域的映射
+    const tagDisciplineMap = buildTagDisciplineMap();
+    
+    // 获取选中的学科领域
+    const selectedDisciplines = Array.from(document.querySelectorAll('.discipline-filter:checked'))
+      .map(cb => cb.value);
+    
+    // 收集应该显示的标签（属于选中学科领域的标签）
+    const visibleTags = new Set();
+    tagDisciplineMap.forEach((disciplines, tag) => {
+      // 如果标签属于至少一个选中的学科领域，则显示
+      if (selectedDisciplines.length === 0 || Array.from(disciplines).some(d => selectedDisciplines.includes(d))) {
+        visibleTags.add(tag);
+      }
+    });
+    
     // 按字母顺序排序
-    const sortedTags = Array.from(allTags).sort();
+    const sortedTags = Array.from(visibleTags).sort();
     
     // 生成标签选项
     tagsContainer.innerHTML = '';
@@ -495,20 +534,121 @@ title: 首页
     });
     
     if (sortedTags.length === 0) {
-      tagsContainer.innerHTML = '<p class="text-xs text-gray-500">暂无标签</p>';
+      tagsContainer.innerHTML = '<p class="text-xs text-gray-500">请先选择学科领域</p>';
+    }
+  }
+  
+  // 处理学科领域变化
+  function handleDisciplineChange() {
+    // 取消清除框的勾选
+    const clearCheckbox = document.getElementById('clear-all-disciplines');
+    if (clearCheckbox) {
+      clearCheckbox.checked = false;
+    }
+    
+    // 更新全选框状态
+    updateSelectAllCheckbox();
+    
+    // 更新标签显示
+    initTagsFilter();
+    
+    // 触发筛选
+    filterEvents();
+  }
+  
+  // 全选所有学科领域
+  function handleSelectAllDisciplines() {
+    const selectAllCheckbox = document.getElementById('select-all-disciplines');
+    const clearCheckbox = document.getElementById('clear-all-disciplines');
+    
+    if (selectAllCheckbox && selectAllCheckbox.checked) {
+      // 全选
+      document.querySelectorAll('.discipline-filter').forEach(cb => {
+        cb.checked = true;
+      });
+      if (clearCheckbox) {
+        clearCheckbox.checked = false;
+      }
+      updateSelectAllCheckbox();
+      initTagsFilter();
+      filterEvents();
+    } else if (selectAllCheckbox && !selectAllCheckbox.checked) {
+      // 如果取消全选，则清除所有
+      document.querySelectorAll('.discipline-filter').forEach(cb => {
+        cb.checked = false;
+      });
+      if (clearCheckbox) {
+        clearCheckbox.checked = true;
+      }
+      updateSelectAllCheckbox();
+      initTagsFilter();
+      filterEvents();
+    }
+  }
+  
+  // 清除所有学科领域
+  function handleClearAllDisciplines() {
+    const clearCheckbox = document.getElementById('clear-all-disciplines');
+    const selectAllCheckbox = document.getElementById('select-all-disciplines');
+    
+    if (clearCheckbox && clearCheckbox.checked) {
+      // 清除所有
+      document.querySelectorAll('.discipline-filter').forEach(cb => {
+        cb.checked = false;
+      });
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = false;
+      }
+      updateSelectAllCheckbox();
+      initTagsFilter();
+      filterEvents();
+    } else if (clearCheckbox && !clearCheckbox.checked) {
+      // 如果取消清除，则全选所有
+      document.querySelectorAll('.discipline-filter').forEach(cb => {
+        cb.checked = true;
+      });
+      if (selectAllCheckbox) {
+        selectAllCheckbox.checked = true;
+      }
+      updateSelectAllCheckbox();
+      initTagsFilter();
+      filterEvents();
+    }
+  }
+  
+  // 更新全选框状态
+  function updateSelectAllCheckbox() {
+    const selectAllCheckbox = document.getElementById('select-all-disciplines');
+    const disciplineCheckboxes = document.querySelectorAll('.discipline-filter');
+    const checkedCount = document.querySelectorAll('.discipline-filter:checked').length;
+    
+    if (selectAllCheckbox && disciplineCheckboxes.length > 0) {
+      selectAllCheckbox.checked = checkedCount === disciplineCheckboxes.length;
     }
   }
   
   // 重置筛选
   function resetFilters() {
-    // 重置学科领域
+    // 重置学科领域（全选）
     document.querySelectorAll('.discipline-filter').forEach(cb => {
       cb.checked = true;
     });
-    // 重置标签
-    document.querySelectorAll('.tag-filter').forEach(cb => {
-      cb.checked = true;
-    });
+    // 重置全选和清除框
+    const selectAllCheckbox = document.getElementById('select-all-disciplines');
+    const clearCheckbox = document.getElementById('clear-all-disciplines');
+    if (selectAllCheckbox) selectAllCheckbox.checked = true;
+    if (clearCheckbox) clearCheckbox.checked = false;
+    
+    // 更新标签显示
+    initTagsFilter();
+    
+    // 重置标签（全选）
+    setTimeout(() => {
+      document.querySelectorAll('.tag-filter').forEach(cb => {
+        cb.checked = true;
+      });
+    }, 0);
+    
     // 重置状态
     document.getElementById('only-open').checked = false;
     // 重置时间范围

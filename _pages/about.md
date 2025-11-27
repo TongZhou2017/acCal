@@ -10,7 +10,6 @@ permalink: /about/
 
     <section class="mb-8">
       <h2 class="text-2xl font-bold text-white mb-4">项目使命</h2>
-      <p class="text-xl text-brand mb-4 font-medium">让学术回归纯粹，把时间还给科研。</p>
       <p class="text-gray-300 leading-relaxed">
         acCal 致力于解决国内学术会议信息分散、鱼龙混杂的痛点。我们提供一个开源、可订阅、且经过人工审核的纯净会议日历，帮助科研人员更高效地规划学术日程。
       </p>
