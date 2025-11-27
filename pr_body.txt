@@ -2,15 +2,15 @@
 
 | 项目 | 状态 | 内容 |
 |------|------|------|
-| **会议名称** | ✅ | Cell Symposia: Host-microbiome dynamics |
-| **届数** | ⚠️ 可选 | *(未填写)* |
+| **会议名称** | ✅ | 中国保护生物学大会 |
+| **届数** | ✅ | 第二届 |
 | **学科分类** | ✅ | 🌿 生命科学 (Life Sciences) |
-| **细分标签** | ✅ | 微生物组 |
-| **会议地点** | ✅ | Bruges•Belgium |
-| **会议时间** | ✅ | 2026-05-10 |
-| **截止日期** | ✅ | 2026-01-16 |
-| **官方网址** | ✅ | https://www.cell-symposia.com/microbiome-2026/ |
-| **会议简介** | ✅ | A resilient microbiome is essential for human health. This community is constantly influenced by microbial, host, and environmental factors. Dysbiosis, a result of perturbations to this interactive co... |
+| **细分标签** | ✅ | 生物学 |
+| **会议地点** | ✅ | 南昌 |
+| **会议时间** | ✅ | 2025-12-04 |
+| **截止日期** | ✅ | 2025-11-20 |
+| **官方网址** | ✅ | http://czsmeeting.bitcast.org.cn/ |
+| **会议简介** | ✅ | 为探讨我国保护生物学研究和生物多样性保护发展战略，展示该领域最新成果与重要进展，促进科技人员之间的交流与合作。由中国动物学会、中国植物学会、中华人民共和国濒危物种科学委员会联合主办，中国动物学会保护生物学分会、中国植物学会系统与进化植物学专业委员会、江西农业大学保护生物学江西省重点实验室、北京市企业家环保基金会（SEE基金会）、江西省野生动植物保护协会、江西农业大学林学院/园林与艺术学院承办的“第... |
 
 ### 📊 完整性检查
 
@@ -26,49 +26,36 @@
 
 ### 基本信息
 
-- **会议名称**: Cell Symposia: Host-microbiome dynamics
-- **届数**: *(未填写)*
+- **会议名称**: 中国保护生物学大会
+- **届数**: 第二届
 - **学科分类**: 🌿 生命科学 (Life Sciences)
-- **细分标签**: 微生物组
-- **会议地点**: Bruges•Belgium
+- **细分标签**: 生物学
+- **会议地点**: 南昌
 
 ### 时间信息
 
-- **会议时间**: 2026-05-10
-  - 解析后开始日期: 2026-05-10
-  - 解析后结束日期: 2026-05-10
-- **截止日期**: 2026-01-16
-  - 解析后日期: 2026-01-16
+- **会议时间**: 2025-12-04
+  - 解析后开始日期: 2025-12-04
+  - 解析后结束日期: 2025-12-04
+- **截止日期**: 2025-11-20
+  - 解析后日期: 2025-11-20
 
 ### 链接信息
 
-- **官方网址**: https://www.cell-symposia.com/microbiome-2026/
+- **官方网址**: http://czsmeeting.bitcast.org.cn/
   - URL 验证: ✅ 通过
 
 ### 会议简介
 
-A resilient microbiome is essential for human health. This community is constantly influenced by microbial, host, and environmental factors. Dysbiosis, a result of perturbations to this interactive community, has significant consequences for host physiology, but our understanding of the related regulatory mechanisms is still emerging.
-
-The establishment and maintenance of a microbial community goes hand in hand with host immunity. As such, we have a growing understanding of microbial-immune crosstalk in modulating the microbiota and bolstering host protection. Understanding the ecology of this complex interplay is crucial for any targeted therapy since disruption of this balance leads to the manifestation of diseases.
-
-This symposium puts the spotlight on the ecology of the human microbiome, its role in shaping host physiology, interplay with the immune system, and how we can use our understanding of these influences for therapeutic applications. It will span the following five sections:
-
-Ecology of microbiome communities
-Host factors influencing the microbiome
-Immune-microbiome interactions 
-Microbiome impacts on health
-Microbiome perturbations and therapeutic applications
-We are excited to bring together experts from various fields, including microbiology, immunology, metabolism, ecology, and precision medicine.
-
-See you in Bruges, Belgium!
+为探讨我国保护生物学研究和生物多样性保护发展战略，展示该领域最新成果与重要进展，促进科技人员之间的交流与合作。由中国动物学会、中国植物学会、中华人民共和国濒危物种科学委员会联合主办，中国动物学会保护生物学分会、中国植物学会系统与进化植物学专业委员会、江西农业大学保护生物学江西省重点实验室、北京市企业家环保基金会（SEE基金会）、江西省野生动植物保护协会、江西农业大学林学院/园林与艺术学院承办的“第二届中国保护生物学大会”将于2025年12月4日-7日在江西省南昌市召开。大会将邀请我国保护生物学研究和生物多样性保护领域的专家学者以及保护管理者做工作交流，特诚挚邀请国内该领域科技工作者参加本次大会。
 
 ---
 
 ## 🔗 相关信息
 
-- **来源 Issue**: [#15](https://github.com/TongZhou2017/acCal/issues/15)
-- **提交者**: @TongZhou2017
-- **生成时间**: 2025-11-26 23:21:08
+- **来源 Issue**: [#17](https://github.com/TongZhou2017/acCal/issues/17)
+- **提交者**: @Haoxiyang-bio
+- **生成时间**: 2025-11-27 01:40:51
 
 ---
 
@@ -90,4 +77,4 @@ draft: false  # 改为 false 后会议才会在网站上显示
 
 或者，如果审核通过，可以在合并 PR 时直接修改文件中的 `draft` 字段。
 
-**此 PR 由 Issue #15 自动生成，合并后将自动关闭该 Issue。**
+**此 PR 由 Issue #17 自动生成，合并后将自动关闭该 Issue。**
