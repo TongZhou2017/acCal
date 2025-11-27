@@ -86,14 +86,38 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.html_url }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: |
-          python scripts/generate_pr_body.py
+          # 运行脚本并捕获输出
+          SCRIPT_OUTPUT=$(python scripts/generate_pr_body.py)
+          
+          # 从输出中提取文件名（格式：PR_BODY_FILE=pr_body_issue_XXX.txt）
+          PR_BODY_FILE=$(echo "$SCRIPT_OUTPUT" | grep "^PR_BODY_FILE=" | cut -d'=' -f2)
+          
+          # 如果没有找到文件名，尝试使用默认文件名（向后兼容）
+          if [ -z "$PR_BODY_FILE" ]; then
+            PR_BODY_FILE="pr_body_issue_${{ github.event.issue.number }}.txt"
+          fi
+          
+          # 检查文件是否存在
+          if [ ! -f "$PR_BODY_FILE" ]; then
+            echo "⚠️ 文件 $PR_BODY_FILE 不存在，尝试查找 pr_body*.txt 文件..."
+            PR_BODY_FILE=$(ls -t pr_body*.txt 2>/dev/null | head -1)
+            if [ -z "$PR_BODY_FILE" ]; then
+              echo "❌ 未找到 PR Body 文件"
+              exit 1
+            fi
+            echo "✅ 找到文件: $PR_BODY_FILE"
+          fi
+          
           # 读取生成的 PR Body 并设置到输出
-          PR_BODY=$(cat pr_body.txt)
+          PR_BODY=$(cat "$PR_BODY_FILE")
           {
             echo 'body<<PR_BODY_EOF'
             echo "$PR_BODY"
             echo PR_BODY_EOF
           } >> $GITHUB_OUTPUT
+          
+          # 清理临时文件（可选，保留用于调试）
+          # rm -f "$PR_BODY_FILE"
 
       # 4.5. 排除工作流文件（GitHub 不允许通过 PR 修改工作流）
       - name: 排除工作流文件

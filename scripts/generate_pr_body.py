@@ -216,9 +216,21 @@ if __name__ == "__main__":
         try:
             issue_data = json.loads(issue_data_env)
             pr_body = generate_pr_body(issue_data, issue_number, issue_author, issue_url)
+            
+            # 使用包含 Issue 号的唯一文件名，避免并发写入冲突
+            if issue_number:
+                pr_body_file = f'pr_body_issue_{issue_number}.txt'
+            else:
+                # 如果没有 Issue 号，使用时间戳作为唯一标识
+                timestamp = datetime.now().strftime('%Y%m%d_%H%M%S_%f')
+                pr_body_file = f'pr_body_{timestamp}.txt'
+            
             # 输出到文件，供工作流使用
-            with open('pr_body.txt', 'w', encoding='utf-8') as f:
+            with open(pr_body_file, 'w', encoding='utf-8') as f:
                 f.write(pr_body)
+            
+            # 同时输出文件名到标准输出，供工作流读取
+            print(f"PR_BODY_FILE={pr_body_file}")
             print("✅ PR Body 生成成功")
             print("=" * 50)
             print(pr_body)

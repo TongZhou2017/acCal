@@ -22,6 +22,9 @@ Thumbs.db
 # 日志
 *.log
 
+# 临时文件（GitHub Actions 生成）
+pr_body*.txt
+
 # 本地配置文件（包含敏感信息）
 _config.local.yml
 *.local.yml
