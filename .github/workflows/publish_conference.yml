@@ -184,13 +184,8 @@ jobs:
             else
               echo "  ⚠️  未找到 draft 字段，添加 draft: false"
               # 在第一个 --- 后添加 draft: false
-              if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' '/^---$/a\
-draft: false
-' "$file"
-              else
-                sed -i '/^---$/a draft: false' "$file"
-              fi
+              # 使用 awk 来添加 draft: false（更可靠，避免 YAML 多行问题）
+              awk '/^---$/ && !seen { print; print "draft: false"; seen=1; next } 1' "$file" > "$file.tmp" && mv "$file.tmp" "$file"
               CHANGED=true
             fi
             
