@@ -3,7 +3,7 @@ layout: "conference"
 title: "Cell Symposia: Host-microbiome dynamics"
 edition: null
 discipline: "🌿 生命科学 (Life Sciences)"
-location: "Bruges•Belgium"
+location: "比利时-布鲁日"
 date_start: "2026-05-10"
 date_end: "2026-05-10"
 deadline: "2026-01-16"

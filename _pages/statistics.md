@@ -192,7 +192,7 @@ permalink: /statistics/
     const stats = {};
     conferences.forEach(conf => {
       const location = conf.location || '';
-      const province = location.split('·')[0]?.trim() || '未知';
+      const province = location.split('-')[0]?.trim() || '未知';
       stats[province] = (stats[province] || 0) + 1;
     });
     return stats;

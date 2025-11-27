@@ -50,8 +50,8 @@ body:
     id: location
     attributes:
       label: 5. 会议地点
-      placeholder: "例如：北京、上海、深圳"
-      description: "只需填写城市名称"
+      placeholder: "例如：广东省-广州市、北京市-北京市、重庆市-重庆市"
+      description: "格式：省-市（使用短横线分隔），直辖市格式为：直辖市-直辖市，例如：北京市-北京市、上海市-上海市、重庆市-重庆市、天津市-天津市"
 
   - type: input
     id: date_start

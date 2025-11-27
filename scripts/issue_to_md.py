@@ -126,6 +126,47 @@ def slugify(text):
     return text
 
 
+def normalize_location(location_str):
+    """规范化会议地点格式为：省-市（使用短横线分隔）
+    
+    Args:
+        location_str: 地点字符串，可能是城市名、省-市格式等
+    
+    Returns:
+        规范化后的地点字符串，格式为：省-市
+    """
+    if not location_str or location_str.strip() == '':
+        return 'TBD'
+    
+    location_str = location_str.strip()
+    
+    # 如果已经是正确的格式（包含"-"分隔符），直接返回
+    if '-' in location_str:
+        # 验证格式：应该只有两个部分（省-市）
+        parts = location_str.split('-')
+        if len(parts) == 2:
+            province = parts[0].strip()
+            city = parts[1].strip()
+            if province and city:
+                return f"{province}-{city}"
+    
+    # 处理直辖市：如果输入的是直辖市名称，补全为 直辖市-直辖市
+    municipalities = {
+        '北京': '北京市-北京市',
+        '上海': '上海市-上海市',
+        '天津': '天津市-天津市',
+        '重庆': '重庆市-重庆市',
+    }
+    
+    if location_str in municipalities:
+        return municipalities[location_str]
+    
+    # 如果只输入了城市名（没有省份），保持原样，但给出警告
+    # 在实际使用中，可能需要手动补全省份
+    print(f"⚠️  地点 '{location_str}' 未包含省份信息，请确保格式为：省-市")
+    return location_str
+
+
 def generate_markdown(issue_data_json):
     """将Issue数据转换为Jekyll使用的Markdown文件（输出到 _conferences 集合）"""
     
@@ -168,6 +209,10 @@ def generate_markdown(issue_data_json):
     deadline_raw = data.get('deadline', '').strip()
     deadline = parse_date(deadline_raw) if deadline_raw else 'N/A'
     
+    # 处理地点：规范化省市格式
+    location_raw = data.get('location', '').strip()
+    location = normalize_location(location_raw)
+    
     # 转换为 YAML Front Matter 格式（Jekyll 格式）
     official_url = data.get('url', '')
     front_matter = {
@@ -175,7 +220,7 @@ def generate_markdown(issue_data_json):
         "title": conf_name,  # 标题不包含届数，届数单独保存在 edition 字段
         "edition": edition if edition else None,  # 保存届数信息，便于后续使用
         "discipline": data.get('discipline_group', ''),
-        "location": data.get('location', 'TBD'),
+        "location": location,
         "date_start": date_start,
         "date_end": date_end,
         "deadline": deadline,
@@ -265,7 +310,7 @@ if __name__ == "__main__":
             "edition": "第六届",
             "discipline_group": "🌿 生命科学 (Life Sciences)",
             "tags": "进化, 生态学, 植物学",
-            "location": "上海",
+            "location": "上海市-上海市",
             "date_start": "2026-04-10",
             "date_end": "2026-04-12",
             "deadline": "2026-02-15",
