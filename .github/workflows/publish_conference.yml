@@ -141,7 +141,7 @@ jobs:
             echo "✅ 找到会议文件: $CONFERENCE_FILES"
           fi
       
-      - name: 自动将 draft 改为 false
+      - name: 确保 draft 为 false（安全措施）
         if: steps.find_conferences.outputs.found == 'true'
         id: update_draft
         run: |
@@ -167,9 +167,9 @@ jobs:
               continue
             fi
             
-            # 检查当前 draft 状态
+            # 检查当前 draft 状态（作为安全措施，确保 draft 始终为 false）
             if grep -q "^draft: true" "$file"; then
-              echo "  当前状态: draft: true"
+              echo "  当前状态: draft: true（自动修正为 false）"
               # 使用 sed 将 draft: true 改为 draft: false
               # macOS 和 Linux 兼容的 sed 命令
               if [[ "$OSTYPE" == "darwin"* ]]; then

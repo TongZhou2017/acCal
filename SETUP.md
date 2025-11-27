@@ -122,7 +122,7 @@ A: 确保已安装 Ruby 和 Bundler，运行 `bundle install` 安装依赖。
 
 ## 📝 注意事项
 
-- 所有会议文件初始状态为 `draft: true`，需要手动审核后改为 `false`
+- 所有会议文件已自动设置为 `draft: false`，合并 PR 后即可在网站上显示
 - 确保 GitHub Actions 有权限创建 PR（默认 `GITHUB_TOKEN` 通常足够）
 - 如果使用自定义域名，需要在 `_config.yml` 中更新 `url` 和 `baseurl`
 

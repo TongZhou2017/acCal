@@ -189,17 +189,10 @@ def generate_pr_body(issue_data_json, issue_number, issue_author, issue_url):
 2. **会议真实性**: 请验证会议是否为合法学术会议，拒绝掠夺性会议
 3. **信息准确性**: 请核对日期、地点等信息是否准确
 4. **格式检查**: 确认生成的 Markdown 文件格式正确
-5. **⚠️ 重要**: 合并前请将会议文件的 `draft: true` 改为 `draft: false`，否则会议不会在网站上显示
 
-### 📝 如何发布会议
+### 📝 发布说明
 
-合并 PR 后，需要手动编辑会议文件，将 `draft: true` 改为 `draft: false`：
-
-```yaml
-draft: false  # 改为 false 后会议才会在网站上显示
-```
-
-或者，如果审核通过，可以在合并 PR 时直接修改文件中的 `draft` 字段。
+会议文件已自动设置为 `draft: false`，合并 PR 后会议将自动在网站上显示，无需手动修改。
 
 **此 PR 由 Issue #{issue_number} 自动生成，合并后将自动关闭该 Issue。**
 """

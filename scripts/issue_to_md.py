@@ -184,7 +184,7 @@ def generate_markdown(issue_data_json):
         "tags": tags_list,
         "submitted_by": data.get('submitter_name', os.environ.get('ISSUE_AUTHOR', 'Community')), # 实际Action中会获取提交者
         "publishDate": datetime.now().isoformat(),
-        "draft": True # 初始状态为草稿，等待人工审核
+        "draft": False # 自动发布，PR 审核通过后即可显示
     }
     
     # 验证必需字段
