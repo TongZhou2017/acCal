@@ -895,19 +895,72 @@ title: 首页
       return;
     }
 
+    // HTML转义函数
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
     // 地址解析和标记点
     const geocoder = new AMap.Geocoder();
     let geocodeCount = 0;
     const totalCount = filteredConferences.length;
+    let resolvedCount = 0;
+
+    // 更新地图视野
+    function updateMapBounds() {
+      if (mapMarkers.length > 0) {
+        const bounds = new AMap.Bounds();
+        mapMarkers.forEach(marker => {
+          bounds.extend(marker.getPosition());
+        });
+        mapInstance.setBounds(bounds, false, [50, 50, 50, 50]);
+      } else {
+        // 如果没有成功解析的标记点，显示提示
+        const container = document.getElementById('map-container');
+        if (container && resolvedCount === 0 && geocodeCount === totalCount) {
+          container.innerHTML = `
+            <div class="flex items-center justify-center h-full text-gray-400">
+              <div class="text-center p-6">
+                <div class="mb-2 text-4xl">⚠️</div>
+                <div class="mb-2 font-semibold">无法解析会议地址</div>
+                <div class="text-sm text-gray-500 mb-4">请检查会议数据中的地址格式是否正确，或查看浏览器控制台了解详情</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
 
     filteredConferences.forEach((conf, index) => {
-      // 解析地址（格式：省份 · 城市）
-      const address = conf.location.replace(' · ', '');
+      // 跳过空地址
+      if (!conf.location || conf.location.trim() === '') {
+        geocodeCount++;
+        if (geocodeCount === totalCount) {
+          updateMapBounds();
+        }
+        return;
+      }
+
+      // 处理地址格式：支持 "省份 · 城市"、"城市"、"城市•国家" 等格式
+      let address = conf.location.trim();
       
+      // 如果是纯中文城市名（不包含"省"、"市"等），尝试添加"市"后缀提高解析成功率
+      if (/^[\u4e00-\u9fa5]+$/.test(address) && !address.includes('省') && !address.includes('市') && !address.includes('区') && !address.includes('县')) {
+        // 对于常见城市，直接添加"市"后缀
+        address = address + '市';
+      } else {
+        // 移除中文间隔符 " · " 和 "•"
+        address = address.replace(/[\s·•]/g, '');
+      }
+      
+      // 使用地理编码API解析地址
       geocoder.getLocation(address, (status, result) => {
         geocodeCount++;
         
-        if (status === 'complete' && result.geocodes.length > 0) {
+        if (status === 'complete' && result.geocodes && result.geocodes.length > 0) {
           const location = result.geocodes[0].location;
           
           // 创建标记点
@@ -921,11 +974,11 @@ title: 首页
           const infoWindow = new AMap.InfoWindow({
             content: `
               <div style="color: #333; padding: 10px; min-width: 200px;">
-                <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${conf.title}</h3>
-                <p style="margin: 4px 0; font-size: 12px; color: #666;">📍 ${conf.location}</p>
+                <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: bold;">${escapeHtml(conf.title)}</h3>
+                <p style="margin: 4px 0; font-size: 12px; color: #666;">📍 ${escapeHtml(conf.location)}</p>
                 <p style="margin: 4px 0; font-size: 12px; color: #666;">🕒 ${conf.dateStart}${conf.dateEnd !== conf.dateStart ? ' - ' + conf.dateEnd : ''}</p>
                 ${conf.deadline && conf.deadline !== 'N/A' ? `<p style="margin: 4px 0; font-size: 12px; color: #f97316;">⚠️ 截稿: ${conf.deadline}</p>` : ''}
-                <a href="${conf.url}" target="_blank" style="display: inline-block; margin-top: 8px; padding: 4px 12px; background: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;">查看详情</a>
+                <a href="${escapeHtml(conf.url)}" target="_blank" style="display: inline-block; margin-top: 8px; padding: 4px 12px; background: #059669; color: white; text-decoration: none; border-radius: 4px; font-size: 12px;">查看详情</a>
               </div>
             `,
             offset: new AMap.Pixel(0, -30)
@@ -936,15 +989,15 @@ title: 首页
           });
 
           mapMarkers.push(marker);
+          resolvedCount++;
+        } else {
+          // 地址解析失败，记录日志
+          console.warn(`地址解析失败: ${conf.location} (尝试解析: ${address}) - ${conf.title}`, status, result);
         }
 
         // 所有地址解析完成后，调整地图视野
-        if (geocodeCount === totalCount && mapMarkers.length > 0) {
-          const bounds = new AMap.Bounds();
-          mapMarkers.forEach(marker => {
-            bounds.extend(marker.getPosition());
-          });
-          mapInstance.setBounds(bounds, false, [50, 50, 50, 50]);
+        if (geocodeCount === totalCount) {
+          updateMapBounds();
         }
       });
     });
