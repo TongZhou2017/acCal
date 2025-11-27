@@ -30,24 +30,29 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
-      - name: Create config file from secrets
-        # 如果配置了GitHub Secret AMAP_KEY，则创建临时配置文件
-        # 这样API密钥不会出现在代码中，也不会被提交到仓库
+      - name: Inject AMAP_KEY into config
+        # 使用Ruby脚本动态修改_config.yml，从环境变量读取AMAP_KEY
+        # 这样不需要创建额外的文件
         run: |
-          if [ -n "${{ secrets.AMAP_KEY }}" ]; then
-            echo "amap_key: \"${{ secrets.AMAP_KEY }}\"" >> _config.local.yml
-            echo "✅ API密钥已从GitHub Secrets加载"
+          ruby -e "
+          require 'yaml'
+          config_file = '_config.yml'
+          config = YAML.load_file(config_file)
+          if ENV['AMAP_KEY'] && !ENV['AMAP_KEY'].empty?
+            config['amap_key'] = ENV['AMAP_KEY']
+            File.write(config_file, YAML.dump(config))
+            puts '✅ API密钥已从环境变量注入到 _config.yml'
           else
-            echo "⚠️ 未配置AMAP_KEY Secret，地图功能将不可用"
-            echo "请在仓库设置中添加Secret: Settings → Secrets and variables → Actions → New repository secret"
-          fi
+            puts '⚠️ 未配置AMAP_KEY环境变量，地图功能将不可用'
+          end
+          "
+        env:
+          AMAP_KEY: ${{ secrets.AMAP_KEY }}
       - name: Build with Jekyll
         uses: actions/jekyll-build-pages@v1
         with:
           source: ./
           destination: ./_site
-          # Jekyll会自动合并_config.yml和_config.local.yml
-          # _config.local.yml已添加到.gitignore，不会被提交
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
 
