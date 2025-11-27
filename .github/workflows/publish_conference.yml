@@ -98,12 +98,41 @@ jobs:
             done <<< "$PR_FILES"
           fi
           
+          # 备用方案：如果前面都没找到文件，检查最近合并的提交
+          if [ -z "$CONFERENCE_FILES" ]; then
+            echo "⚠️ 通过 diff 未找到文件，尝试检查最近合并的提交..."
+            MERGE_COMMIT="${{ github.event.pull_request.merge_commit_sha }}"
+            if [ -n "$MERGE_COMMIT" ] && git cat-file -e "$MERGE_COMMIT" 2>/dev/null; then
+              echo "检查合并提交 $MERGE_COMMIT 中的文件..."
+              RECENT_FILES=$(git diff-tree --no-commit-id --name-only --diff-filter=AM -r "$MERGE_COMMIT" | grep "^_conferences/.*\.md$" || echo "")
+              if [ -n "$RECENT_FILES" ]; then
+                echo "✅ 在合并提交中找到文件:"
+                echo "$RECENT_FILES"
+                CONFERENCE_FILES="$RECENT_FILES"
+              fi
+            fi
+          fi
+          
+          # 最终备用方案：检查 HEAD 提交中的新文件
+          if [ -z "$CONFERENCE_FILES" ]; then
+            echo "⚠️ 仍未找到文件，检查 HEAD 提交..."
+            HEAD_FILES=$(git diff-tree --no-commit-id --name-only --diff-filter=A -r HEAD | grep "^_conferences/.*\.md$" || echo "")
+            if [ -n "$HEAD_FILES" ]; then
+              echo "✅ 在 HEAD 提交中找到新文件:"
+              echo "$HEAD_FILES"
+              CONFERENCE_FILES="$HEAD_FILES"
+            fi
+          fi
+          
           if [ -z "$CONFERENCE_FILES" ]; then
             echo "found=false" >> $GITHUB_OUTPUT
-            echo "⚠️ 没有找到新的会议文件"
-            # 尝试查找所有 _conferences 目录下的文件
-            echo "检查 _conferences 目录下的所有文件:"
-            ls -la _conferences/ || echo "目录不存在"
+            echo "❌ 最终未找到新的会议文件"
+            # 尝试查找所有 _conferences 目录下的文件（用于调试）
+            echo "调试信息 - 检查 _conferences 目录下的所有文件:"
+            ls -la _conferences/ 2>&1 || echo "目录不存在"
+            echo ""
+            echo "调试信息 - 最近的提交:"
+            git log --oneline -5 --name-only --pretty=format:"%h %s" | head -20
           else
             echo "found=true" >> $GITHUB_OUTPUT
             echo "files<<EOF" >> $GITHUB_OUTPUT
@@ -119,40 +148,86 @@ jobs:
           FILES="${{ steps.find_conferences.outputs.files }}"
           CHANGED=false
           
-          for file in $FILES; do
-            file=$(echo "$file" | xargs)  # 去除空格
-            if [ -f "$file" ]; then
-              echo "📝 处理文件: $file"
-              
-              # 检查当前 draft 状态
-              if grep -q "^draft: true" "$file"; then
-                echo "  当前状态: draft: true"
-                # 使用 sed 将 draft: true 改为 draft: false
-                sed -i 's/^draft: true$/draft: false/' "$file"
-                echo "  ✅ 已将 draft 设置为 false"
-                CHANGED=true
-              elif grep -q "^draft: false" "$file"; then
-                echo "  ℹ️  已经是 draft: false，跳过"
-              else
-                echo "  ⚠️  未找到 draft 字段，添加 draft: false"
-                # 在 front matter 中添加 draft: false
-                sed -i '/^---$/a draft: false' "$file" | head -1
-                CHANGED=true
-              fi
-              
-              # 显示修改后的内容（前20行）
-              echo "  文件内容预览:"
-              head -20 "$file" | grep -E "(draft:|title:)" || echo "  (未找到相关字段)"
-            else
-              echo "⚠️  文件不存在: $file"
+          echo "📋 准备处理的文件列表:"
+          echo "$FILES"
+          echo ""
+          
+          # 使用 while read 循环处理文件列表（支持多行和空格）
+          while IFS= read -r file || [ -n "$file" ]; do
+            # 去除首尾空格和换行符
+            file=$(echo "$file" | xargs)
+            
+            # 跳过空行
+            [ -z "$file" ] && continue
+            
+            echo "📝 处理文件: $file"
+            
+            if [ ! -f "$file" ]; then
+              echo "  ⚠️  文件不存在: $file"
+              continue
             fi
-          done
+            
+            # 检查当前 draft 状态
+            if grep -q "^draft: true" "$file"; then
+              echo "  当前状态: draft: true"
+              # 使用 sed 将 draft: true 改为 draft: false
+              # macOS 和 Linux 兼容的 sed 命令
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' 's/^draft: true$/draft: false/' "$file"
+              else
+                sed -i 's/^draft: true$/draft: false/' "$file"
+              fi
+              echo "  ✅ 已将 draft 设置为 false"
+              CHANGED=true
+            elif grep -q "^draft: false" "$file"; then
+              echo "  ℹ️  已经是 draft: false，跳过"
+            else
+              echo "  ⚠️  未找到 draft 字段，添加 draft: false"
+              # 在第一个 --- 后添加 draft: false
+              if [[ "$OSTYPE" == "darwin"* ]]; then
+                sed -i '' '/^---$/a\
+draft: false
+' "$file"
+              else
+                sed -i '/^---$/a draft: false' "$file"
+              fi
+              CHANGED=true
+            fi
+            
+            # 显示修改后的内容（前20行）
+            echo "  文件内容预览:"
+            head -20 "$file" | grep -E "(draft:|title:)" || echo "  (未找到相关字段)"
+            echo ""
+          done <<< "$FILES"
           
           if [ "$CHANGED" = "true" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
+            echo "✅ 有文件被修改"
           else
             echo "changed=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  没有文件需要修改"
           fi
+      
+      - name: 验证修改
+        if: steps.find_conferences.outputs.found == 'true' && steps.update_draft.outputs.changed == 'true'
+        run: |
+          FILES="${{ steps.find_conferences.outputs.files }}"
+          echo "🔍 验证文件修改状态:"
+          
+          while IFS= read -r file || [ -n "$file" ]; do
+            file=$(echo "$file" | xargs)
+            [ -z "$file" ] && continue
+            
+            if [ -f "$file" ]; then
+              if grep -q "^draft: false" "$file"; then
+                echo "  ✅ $file - draft: false"
+              elif grep -q "^draft: true" "$file"; then
+                echo "  ⚠️  $file - 仍然是 draft: true（可能修改失败）"
+              else
+                echo "  ⚠️  $file - 未找到 draft 字段"
+              fi
+            fi
+          done <<< "$FILES"
       
       - name: 提交更改
         if: steps.find_conferences.outputs.found == 'true' && steps.update_draft.outputs.changed == 'true'
@@ -162,18 +237,29 @@ jobs:
           
           # 添加所有修改的会议文件
           FILES="${{ steps.find_conferences.outputs.files }}"
-          for file in $FILES; do
+          echo "📋 准备提交的文件:"
+          
+          # 使用 while read 循环处理文件列表
+          while IFS= read -r file || [ -n "$file" ]; do
             file=$(echo "$file" | xargs)
+            [ -z "$file" ] && continue
+            
             if [ -f "$file" ]; then
+              echo "  + $file"
               git add "$file"
+            else
+              echo "  ⚠️  文件不存在: $file"
             fi
-          done
+          done <<< "$FILES"
           
           # 检查是否有更改需要提交
           if git diff --staged --quiet; then
             echo "ℹ️  没有需要提交的更改"
           else
+            echo ""
+            echo "📝 提交更改..."
             git commit -m "chore: 自动发布会议 (来自 PR #${{ github.event.pull_request.number }})"
+            echo "🚀 推送更改..."
             git push
             echo "✅ 已提交并推送更改"
           fi

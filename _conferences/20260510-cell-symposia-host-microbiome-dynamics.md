@@ -12,7 +12,7 @@ website: "https://www.cell-symposia.com/microbiome-2026/"
 tags: ["\u5fae\u751f\u7269\u7ec4"]
 submitted_by: "TongZhou2017"
 publishDate: "2025-11-26T23:21:08.783534"
-draft: true
+draft: false
 ---
 
 ## 会议简介

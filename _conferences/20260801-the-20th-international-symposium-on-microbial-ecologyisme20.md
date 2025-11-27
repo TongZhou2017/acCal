@@ -11,7 +11,7 @@ url: "https://isme-microbes.org/isme20-sessions/"
 tags: ["\u5fae\u751f\u7269\u751f\u6001\u5b66"]
 submitted_by: "TongZhou2017"
 publishDate: "2025-11-26T23:11:35.387009"
-draft: true
+draft: false
 ---
 
 ## 会议简介
