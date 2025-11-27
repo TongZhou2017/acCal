@@ -39,7 +39,7 @@ title: 首页
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">状态</p>
           <label class="flex items-center gap-2 cursor-pointer">
             <input type="checkbox" id="only-open" class="form-checkbox text-brand rounded bg-darkbg border-gray-600" onchange="filterEvents()">
-            <span class="text-sm">仅显示未截稿</span>
+            <span class="text-sm">仅显示未开始</span>
           </label>
         </div>
 
@@ -450,9 +450,9 @@ title: 首页
         conf.location.toLowerCase().includes(searchTerm) ||
         (conf.tags && conf.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
       
-      let matchesDeadline = true;
-      if (onlyOpen && conf.deadline && conf.deadline !== 'N/A') {
-        matchesDeadline = new Date(conf.deadline) > new Date();
+      let matchesNotStarted = true;
+      if (onlyOpen) {
+        matchesNotStarted = new Date(conf.dateStart) > new Date();
       }
 
       // 时间范围筛选
@@ -473,7 +473,7 @@ title: 首页
         }
       }
       
-      return matchesType && matchesSearch && matchesDeadline && matchesDateRange;
+      return matchesType && matchesSearch && matchesNotStarted && matchesDateRange;
     });
   }
 
@@ -489,8 +489,6 @@ title: 首页
       const cardDateStart = card.dataset.dateStart || '';
       const cardDateEnd = card.dataset.dateEnd || cardDateStart;
       const text = card.textContent.toLowerCase();
-      const deadlineText = card.textContent;
-      const deadlineMatch = deadlineText.match(/截稿: (\d{4}-\d{2}-\d{2})/);
       
       const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
       const selectedTypes = Array.from(checkedBoxes)
@@ -504,11 +502,9 @@ title: 首页
       const matchesType = selectedTypes.length === 0 || selectedTypes.includes(cardType);
       const matchesSearch = text.includes(searchTerm);
       
-      let matchesDeadline = true;
-      if (onlyOpen) {
-        if (deadlineMatch) {
-          matchesDeadline = new Date(deadlineMatch[1]) > new Date();
-        }
+      let matchesNotStarted = true;
+      if (onlyOpen && cardDateStart) {
+        matchesNotStarted = new Date(cardDateStart) > new Date();
       }
 
       let matchesDateRange = true;
@@ -532,7 +528,7 @@ title: 首页
         }
       }
       
-      if (matchesType && matchesSearch && matchesDeadline && matchesDateRange) {
+      if (matchesType && matchesSearch && matchesNotStarted && matchesDateRange) {
         card.style.display = '';
       } else {
         card.style.display = 'none';
