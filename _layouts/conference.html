@@ -6,13 +6,19 @@ layout: default
   <article class="bg-cardbg border border-gray-700 rounded-2xl overflow-hidden">
     <div class="h-32 bg-gradient-to-r from-brand-dark to-brand relative">
       <div class="absolute bottom-4 left-6">
-        {% assign type_class = "tag-bio" %}
-        {% if page.discipline contains "生态" or page.discipline contains "Ecology" %}
-          {% assign type_class = "tag-eco" %}
-        {% elsif page.discipline contains "进化" or page.discipline contains "Evolution" %}
-          {% assign type_class = "tag-evo" %}
-        {% elsif page.discipline contains "环境" or page.discipline contains "Environment" %}
-          {% assign type_class = "tag-env" %}
+        {% assign type_class = "tag-other" %}
+        {% if page.discipline contains "生命科学" or page.discipline contains "Life Sciences" %}
+          {% assign type_class = "tag-life" %}
+        {% elsif page.discipline contains "地球与环境" or page.discipline contains "Earth & Environment" %}
+          {% assign type_class = "tag-earth" %}
+        {% elsif page.discipline contains "信息与工程" or page.discipline contains "IT & Engineering" %}
+          {% assign type_class = "tag-it" %}
+        {% elsif page.discipline contains "数理化" or page.discipline contains "Physical Sciences" %}
+          {% assign type_class = "tag-physical" %}
+        {% elsif page.discipline contains "人文社科" or page.discipline contains "Social Sciences" %}
+          {% assign type_class = "tag-social" %}
+        {% elsif page.discipline contains "医学与健康" or page.discipline contains "Medicine" %}
+          {% assign type_class = "tag-medicine" %}
         {% endif %}
         {% if page.tags.size > 0 %}
           <span class="px-2 py-0.5 rounded text-xs font-bold bg-white/20 text-white border border-white/20 backdrop-blur-md">{{ page.tags[0] }}</span>
@@ -54,13 +60,19 @@ layout: default
         {% if page.tags.size > 0 %}
           <div class="flex flex-wrap gap-2 mb-4">
             {% for tag in page.tags %}
-              {% assign type_class = "tag-bio" %}
-              {% if page.discipline contains "生态" or page.discipline contains "Ecology" %}
-                {% assign type_class = "tag-eco" %}
-              {% elsif page.discipline contains "进化" or page.discipline contains "Evolution" %}
-                {% assign type_class = "tag-evo" %}
-              {% elsif page.discipline contains "环境" or page.discipline contains "Environment" %}
-                {% assign type_class = "tag-env" %}
+              {% assign type_class = "tag-other" %}
+              {% if page.discipline contains "生命科学" or page.discipline contains "Life Sciences" %}
+                {% assign type_class = "tag-life" %}
+              {% elsif page.discipline contains "地球与环境" or page.discipline contains "Earth & Environment" %}
+                {% assign type_class = "tag-earth" %}
+              {% elsif page.discipline contains "信息与工程" or page.discipline contains "IT & Engineering" %}
+                {% assign type_class = "tag-it" %}
+              {% elsif page.discipline contains "数理化" or page.discipline contains "Physical Sciences" %}
+                {% assign type_class = "tag-physical" %}
+              {% elsif page.discipline contains "人文社科" or page.discipline contains "Social Sciences" %}
+                {% assign type_class = "tag-social" %}
+              {% elsif page.discipline contains "医学与健康" or page.discipline contains "Medicine" %}
+                {% assign type_class = "tag-medicine" %}
               {% endif %}
               <span class="text-xs px-2 py-0.5 rounded {{ type_class }}">{{ tag }}</span>
             {% endfor %}

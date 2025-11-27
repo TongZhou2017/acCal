@@ -17,21 +17,40 @@ title: 首页
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">学科领域</p>
           <div class="space-y-2">
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="eco" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand" onchange="filterEvents()">
-              <span class="text-sm">生态学 (Ecology)</span>
+              <input type="checkbox" checked value="life" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">🌿 生命科学</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="evo" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand" onchange="filterEvents()">
-              <span class="text-sm">进化生物学 (Evolution)</span>
+              <input type="checkbox" checked value="earth" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">🌍 地球与环境</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="env" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand" onchange="filterEvents()">
-              <span class="text-sm">环境科学 (Environment)</span>
+              <input type="checkbox" checked value="it" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">💻 信息与工程</span>
             </label>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" checked value="bio" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand" onchange="filterEvents()">
-              <span class="text-sm">生物信息学 (Bioinfo)</span>
+              <input type="checkbox" checked value="physical" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">⚛️ 数理化</span>
             </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked value="social" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">📚 人文社科</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked value="medicine" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">🏥 医学与健康</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" checked value="other" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand discipline-filter" onchange="filterEvents()">
+              <span class="text-sm">🔬 其他</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">细分标签</p>
+          <div id="tags-filter-container" class="space-y-2 max-h-64 overflow-y-auto">
+            <!-- 标签选项将通过 JavaScript 动态生成 -->
           </div>
         </div>
 
@@ -88,18 +107,26 @@ title: 首页
           {% assign month = conference.date_start | date: "%b" | upcase %}
           {% assign day = conference.date_start | date: "%d" | plus: 0 %}
           
-          {% assign type_class = "tag-bio" %}
-          {% if conference.discipline contains "生态" or conference.discipline contains "Ecology" %}
-            {% assign type_class = "tag-eco" %}
-            {% assign type_value = "eco" %}
-          {% elsif conference.discipline contains "进化" or conference.discipline contains "Evolution" %}
-            {% assign type_class = "tag-evo" %}
-            {% assign type_value = "evo" %}
-          {% elsif conference.discipline contains "环境" or conference.discipline contains "Environment" %}
-            {% assign type_class = "tag-env" %}
-            {% assign type_value = "env" %}
-          {% else %}
-            {% assign type_value = "bio" %}
+          {% assign type_class = "tag-other" %}
+          {% assign type_value = "other" %}
+          {% if conference.discipline contains "生命科学" or conference.discipline contains "Life Sciences" %}
+            {% assign type_class = "tag-life" %}
+            {% assign type_value = "life" %}
+          {% elsif conference.discipline contains "地球与环境" or conference.discipline contains "Earth & Environment" %}
+            {% assign type_class = "tag-earth" %}
+            {% assign type_value = "earth" %}
+          {% elsif conference.discipline contains "信息与工程" or conference.discipline contains "IT & Engineering" %}
+            {% assign type_class = "tag-it" %}
+            {% assign type_value = "it" %}
+          {% elsif conference.discipline contains "数理化" or conference.discipline contains "Physical Sciences" %}
+            {% assign type_class = "tag-physical" %}
+            {% assign type_value = "physical" %}
+          {% elsif conference.discipline contains "人文社科" or conference.discipline contains "Social Sciences" %}
+            {% assign type_class = "tag-social" %}
+            {% assign type_value = "social" %}
+          {% elsif conference.discipline contains "医学与健康" or conference.discipline contains "Medicine" %}
+            {% assign type_class = "tag-medicine" %}
+            {% assign type_value = "medicine" %}
           {% endif %}
 
           {% assign deadline_passed = false %}
@@ -196,13 +223,19 @@ title: 首页
   {% assign first = true %}
   {% for conference in site.conferences %}
     {% unless conference.draft %}
-      {% assign type_value = "bio" %}
-      {% if conference.discipline contains "生态" or conference.discipline contains "Ecology" %}
-        {% assign type_value = "eco" %}
-      {% elsif conference.discipline contains "进化" or conference.discipline contains "Evolution" %}
-        {% assign type_value = "evo" %}
-      {% elsif conference.discipline contains "环境" or conference.discipline contains "Environment" %}
-        {% assign type_value = "env" %}
+      {% assign type_value = "other" %}
+      {% if conference.discipline contains "生命科学" or conference.discipline contains "Life Sciences" %}
+        {% assign type_value = "life" %}
+      {% elsif conference.discipline contains "地球与环境" or conference.discipline contains "Earth & Environment" %}
+        {% assign type_value = "earth" %}
+      {% elsif conference.discipline contains "信息与工程" or conference.discipline contains "IT & Engineering" %}
+        {% assign type_value = "it" %}
+      {% elsif conference.discipline contains "数理化" or conference.discipline contains "Physical Sciences" %}
+        {% assign type_value = "physical" %}
+      {% elsif conference.discipline contains "人文社科" or conference.discipline contains "Social Sciences" %}
+        {% assign type_value = "social" %}
+      {% elsif conference.discipline contains "医学与健康" or conference.discipline contains "Medicine" %}
+        {% assign type_value = "medicine" %}
       {% endif %}
       {% unless first %},{% endunless %}{% assign first = false %}
       {
@@ -280,6 +313,11 @@ title: 首页
   
   // 高德地图API密钥（从Jekyll配置中获取）
   const AMAP_KEY = '{{ site.amap_key }}' || '';
+  
+  // 页面加载时初始化标签过滤
+  document.addEventListener('DOMContentLoaded', function() {
+    initTagsFilter();
+  });
 
   // 视图切换
   function switchView(view) {
@@ -364,9 +402,16 @@ title: 首页
         const day = date.getDate();
         const monthShort = date.toLocaleString('en-US', { month: 'short' }).toUpperCase();
         
-        const typeClass = conf.type === 'eco' ? 'tag-eco' : 
-                          conf.type === 'evo' ? 'tag-evo' :
-                          conf.type === 'env' ? 'tag-env' : 'tag-bio';
+        const typeClassMap = {
+          'life': 'tag-life',
+          'earth': 'tag-earth',
+          'it': 'tag-it',
+          'physical': 'tag-physical',
+          'social': 'tag-social',
+          'medicine': 'tag-medicine',
+          'other': 'tag-other'
+        };
+        const typeClass = typeClassMap[conf.type] || 'tag-other';
 
         const card = document.createElement('div');
         card.className = 'conference-card bg-darkbg border border-gray-700 rounded-lg p-4 hover:border-brand/50 transition cursor-pointer group';
@@ -417,15 +462,55 @@ title: 首页
     }
   }
 
-  // 重置筛选
-  function resetFilters() {
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-      if (cb.id !== 'only-open') {
-        cb.checked = true;
-      } else {
-        cb.checked = false;
+  // 初始化标签过滤选项
+  function initTagsFilter() {
+    const tagsContainer = document.getElementById('tags-filter-container');
+    if (!tagsContainer) return;
+    
+    // 收集所有唯一的标签
+    const allTags = new Set();
+    conferencesData.forEach(conf => {
+      if (conf.tags && Array.isArray(conf.tags)) {
+        conf.tags.forEach(tag => {
+          if (tag && tag.trim()) {
+            allTags.add(tag.trim());
+          }
+        });
       }
     });
+    
+    // 按字母顺序排序
+    const sortedTags = Array.from(allTags).sort();
+    
+    // 生成标签选项
+    tagsContainer.innerHTML = '';
+    sortedTags.forEach(tag => {
+      const label = document.createElement('label');
+      label.className = 'flex items-center gap-2 cursor-pointer';
+      label.innerHTML = `
+        <input type="checkbox" checked value="${tag.replace(/"/g, '&quot;')}" class="form-checkbox text-brand rounded bg-darkbg border-gray-600 focus:ring-brand tag-filter" onchange="filterEvents()">
+        <span class="text-sm">${tag}</span>
+      `;
+      tagsContainer.appendChild(label);
+    });
+    
+    if (sortedTags.length === 0) {
+      tagsContainer.innerHTML = '<p class="text-xs text-gray-500">暂无标签</p>';
+    }
+  }
+  
+  // 重置筛选
+  function resetFilters() {
+    // 重置学科领域
+    document.querySelectorAll('.discipline-filter').forEach(cb => {
+      cb.checked = true;
+    });
+    // 重置标签
+    document.querySelectorAll('.tag-filter').forEach(cb => {
+      cb.checked = true;
+    });
+    // 重置状态
+    document.getElementById('only-open').checked = false;
     // 重置时间范围
     document.getElementById('date-start-filter').value = '';
     document.getElementById('date-end-filter').value = '';
@@ -434,22 +519,36 @@ title: 首页
 
   // 获取筛选后的会议数据
   function getFilteredConferences() {
-    const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
-    const selectedTypes = Array.from(checkedBoxes)
-      .filter(cb => cb.value && cb.id !== 'only-open')
+    // 获取选中的学科领域
+    const selectedDisciplines = Array.from(document.querySelectorAll('.discipline-filter:checked'))
       .map(cb => cb.value);
+    
+    // 获取选中的标签
+    const selectedTags = Array.from(document.querySelectorAll('.tag-filter:checked'))
+      .map(cb => cb.value);
+    
     const onlyOpen = document.getElementById('only-open')?.checked;
     const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
     const dateStartFilter = document.getElementById('date-start-filter')?.value || '';
     const dateEndFilter = document.getElementById('date-end-filter')?.value || '';
 
     return conferencesData.filter(conf => {
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(conf.type);
+      // 学科领域筛选
+      const matchesDiscipline = selectedDisciplines.length === 0 || selectedDisciplines.includes(conf.type);
+      
+      // 标签筛选（如果选中了标签，会议必须包含至少一个选中的标签）
+      let matchesTags = true;
+      if (selectedTags.length > 0 && conf.tags && Array.isArray(conf.tags)) {
+        matchesTags = conf.tags.some(tag => selectedTags.includes(tag));
+      }
+      
+      // 搜索筛选
       const matchesSearch = searchTerm === '' || 
         conf.title.toLowerCase().includes(searchTerm) ||
         conf.location.toLowerCase().includes(searchTerm) ||
         (conf.tags && conf.tags.some(tag => tag.toLowerCase().includes(searchTerm)));
       
+      // 未开始筛选
       let matchesNotStarted = true;
       if (onlyOpen) {
         matchesNotStarted = new Date(conf.dateStart) > new Date();
@@ -463,17 +562,15 @@ title: 首页
         
         if (dateStartFilter) {
           const startFilterDate = new Date(dateStartFilter);
-          // 会议结束日期必须在筛选开始日期之后
           matchesDateRange = matchesDateRange && confEndDate >= startFilterDate;
         }
         if (dateEndFilter) {
           const endFilterDate = new Date(dateEndFilter);
-          // 会议开始日期必须在筛选结束日期之前
           matchesDateRange = matchesDateRange && confStartDate <= endFilterDate;
         }
       }
       
-      return matchesType && matchesSearch && matchesNotStarted && matchesDateRange;
+      return matchesDiscipline && matchesTags && matchesSearch && matchesNotStarted && matchesDateRange;
     });
   }
 
@@ -490,16 +587,32 @@ title: 首页
       const cardDateEnd = card.dataset.dateEnd || cardDateStart;
       const text = card.textContent.toLowerCase();
       
-      const checkedBoxes = document.querySelectorAll('aside input[type="checkbox"]:checked');
-      const selectedTypes = Array.from(checkedBoxes)
-        .filter(cb => cb.value && cb.id !== 'only-open')
+      // 获取选中的学科领域
+      const selectedDisciplines = Array.from(document.querySelectorAll('.discipline-filter:checked'))
         .map(cb => cb.value);
+      
+      // 获取选中的标签
+      const selectedTags = Array.from(document.querySelectorAll('.tag-filter:checked'))
+        .map(cb => cb.value);
+      
       const onlyOpen = document.getElementById('only-open')?.checked;
       const searchTerm = document.getElementById('search-input')?.value.toLowerCase() || '';
       const dateStartFilter = document.getElementById('date-start-filter')?.value || '';
       const dateEndFilter = document.getElementById('date-end-filter')?.value || '';
       
-      const matchesType = selectedTypes.length === 0 || selectedTypes.includes(cardType);
+      // 学科领域匹配
+      const matchesDiscipline = selectedDisciplines.length === 0 || selectedDisciplines.includes(cardType);
+      
+      // 标签匹配（需要从卡片中提取标签）
+      let matchesTags = true;
+      if (selectedTags.length > 0) {
+        // 从卡片中提取所有标签文本（包括学科分类标签和细分标签）
+        const cardTags = Array.from(card.querySelectorAll('span[class*="tag-"]'))
+          .map(el => el.textContent.trim())
+          .filter(tag => tag.length > 0);
+        matchesTags = cardTags.some(tag => selectedTags.includes(tag));
+      }
+      
       const matchesSearch = text.includes(searchTerm);
       
       let matchesNotStarted = true;
@@ -528,7 +641,7 @@ title: 首页
         }
       }
       
-      if (matchesType && matchesSearch && matchesNotStarted && matchesDateRange) {
+      if (matchesDiscipline && matchesTags && matchesSearch && matchesNotStarted && matchesDateRange) {
         card.style.display = '';
       } else {
         card.style.display = 'none';

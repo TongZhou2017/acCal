@@ -20,18 +20,26 @@ permalink: /conferences/
           {% assign month = conference.date_start | date: "%b" | upcase %}
           {% assign day = conference.date_start | date: "%d" | plus: 0 %}
           
-          {% assign type_class = "tag-bio" %}
-          {% if conference.discipline contains "生态" or conference.discipline contains "Ecology" %}
-            {% assign type_class = "tag-eco" %}
-            {% assign type_value = "eco" %}
-          {% elsif conference.discipline contains "进化" or conference.discipline contains "Evolution" %}
-            {% assign type_class = "tag-evo" %}
-            {% assign type_value = "evo" %}
-          {% elsif conference.discipline contains "环境" or conference.discipline contains "Environment" %}
-            {% assign type_class = "tag-env" %}
-            {% assign type_value = "env" %}
-          {% else %}
-            {% assign type_value = "bio" %}
+          {% assign type_class = "tag-other" %}
+          {% assign type_value = "other" %}
+          {% if conference.discipline contains "生命科学" or conference.discipline contains "Life Sciences" %}
+            {% assign type_class = "tag-life" %}
+            {% assign type_value = "life" %}
+          {% elsif conference.discipline contains "地球与环境" or conference.discipline contains "Earth & Environment" %}
+            {% assign type_class = "tag-earth" %}
+            {% assign type_value = "earth" %}
+          {% elsif conference.discipline contains "信息与工程" or conference.discipline contains "IT & Engineering" %}
+            {% assign type_class = "tag-it" %}
+            {% assign type_value = "it" %}
+          {% elsif conference.discipline contains "数理化" or conference.discipline contains "Physical Sciences" %}
+            {% assign type_class = "tag-physical" %}
+            {% assign type_value = "physical" %}
+          {% elsif conference.discipline contains "人文社科" or conference.discipline contains "Social Sciences" %}
+            {% assign type_class = "tag-social" %}
+            {% assign type_value = "social" %}
+          {% elsif conference.discipline contains "医学与健康" or conference.discipline contains "Medicine" %}
+            {% assign type_class = "tag-medicine" %}
+            {% assign type_value = "medicine" %}
           {% endif %}
 
           {% assign deadline_passed = false %}
